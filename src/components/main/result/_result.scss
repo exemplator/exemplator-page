@@ -1,0 +1,22 @@
+@import '../../app/theme';
+
+.result {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 60%;
+  padding-bottom: 2%;
+}
+
+.result-links {
+  text-decoration: none;
+  font-family: Header-Font, sans-serif;
+}
+
+#github-link:hover {
+  color: $primary-color
+}
+
+#raw-link:hover {
+  color: $primary-color
+}

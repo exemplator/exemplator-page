@@ -1,0 +1,34 @@
+@import '../app/theme';
+
+.main {
+  width: 100vw;
+  min-height: 100vh;
+  background-color: $background-color-body;
+}
+
+.main-hero {
+  background-color: $background-color-hero;
+}
+
+.main-body {
+  padding-top: 2%;
+}
+
+.main-title {
+  display: block;
+  padding-top: 5%;
+  margin-right: auto;
+  margin-left: auto;
+  text-align: center;
+  font-size: 3em;
+  color: white;
+}
+
+.main-subtitle {
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+  text-align: center;
+  font-size: 1.2em;
+  color: white;
+}

@@ -1,0 +1,25 @@
+// Colors
+$primary-color: #C62828;
+$background-color-body: #E0E0E0;
+$body-text-color: #4A4A4A;
+$background-color-hero: #212121;
+
+.primary-color {
+  color: $primary-color
+}
+
+// Fonts
+@font-face {
+  font-family: Header-Font;
+  src: url("./resources/fonts/Titillium/Titillium-Thin.otf");
+}
+
+@font-face {
+  font-family: Body-Font;
+  src: url("./resources/fonts/Monaco.ttf");
+}
+
+@font-face {
+  font-family: Code-Font;
+  src: url("./resources/fonts/Monaco.ttf");
+}
