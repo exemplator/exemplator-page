@@ -22,17 +22,13 @@ export default class Home extends React.Component {
     }
     
     _updateCodeSamples() {
-        console.log("here")
         let codeSampleList = Immutable.List(FetchStore.getCodeSamples())
-            .map(res => {
-                console.log(res)
-                return <Result title={res.title}
-                                githubURL={res.userUrl}
-                                rawURL={res.rawUrl}
-                                codeTop={res.codeTop}
-                                codeHighlighted={res.codeHighlighted}
-                                codeBottom={res.codeBottom} />
-            })
+            .map(res => <Result title={res.title}
+                            githubURL={res.userUrl}
+                            rawURL={res.rawUrl}
+                            codeTop={res.codeTop}
+                            codeHighlighted={res.codeHighlighted}
+                            codeBottom={res.codeBottom} />)
 
         this.setState({
             codeSamples: codeSampleList

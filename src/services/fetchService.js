@@ -1,18 +1,26 @@
 import FetchConstants from "../constants/fetchConstants"
-import { fetchSuccess, fetchError } from "../actions/fetchActions"
+import FetchStore from '../stores/fetchStore'
+import { fetchSuccess, fetchError, nextPageSuccess } from "../actions/fetchActions"
 
 export var sendRequest = function(action) {
+    // update store with new request
+    FetchStore.setCode(action.code)
+    FetchStore.setType(action.type)
+    FetchStore.setPage(0)
+    FetchStore.setCounter(1)
+    
     let typeArray = action.type.split(".")
     let pakage = action.type.substring(0, action.type.length - typeArray[typeArray.length - 1].length - 1)
-
+    
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open("POST", FetchConstants.FETCH_URL);
     xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
-    xmlhttp.onreadystatechange = function () {
+    xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == XMLHttpRequest.DONE) {
             if (xmlhttp.status == 200) {
-                handleResponseSuccess(xmlhttp.responseText)
+                let data = handleResponseSuccess(xmlhttp.responseText)
+                fetchSuccess(data);
             } else if (xmlhttp.status == 400) {
                 fetchError("Error 400 returned from server")
             } else {
@@ -31,6 +39,50 @@ export var sendRequest = function(action) {
     xmlhttp.send(JSON.stringify(data));
 }
 
+export var fetchNextPage = function() {
+    // get current request settings
+    let code = FetchStore.getCode()
+    let type = FetchStore.getType()
+    let page = FetchStore.getPage()
+    
+    // increment page by 1
+    page += 1
+    
+    if (FetchStore.getCounter() <= 0) {
+        return
+    }
+
+    let typeArray = type.split(".")
+    let pakage = type.substring(0, type.length - typeArray[typeArray.length - 1].length - 1)
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", FetchConstants.FETCH_URL);
+    xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+            if (xmlhttp.status == 200) {
+                let data = handleResponseSuccess(xmlhttp.responseText)
+                FetchStore.setPage(page)
+                nextPageSuccess(data);
+            } else if (xmlhttp.status == 400) {
+                fetchError("Error 400 returned from server")
+            } else {
+                fetchError("Server Error: " + xmlhttp.status)
+            }
+        }
+    };
+
+    let data = {
+        'package': pakage,
+        'class': typeArray[typeArray.length - 1],
+        'method': code,
+        'page': page
+    }
+
+    xmlhttp.send(JSON.stringify(data));
+}
+
 let handleResponseSuccess = function(responses) {
     let response = JSON.parse(responses);
     let responseArray = response.occurrences;
@@ -40,31 +92,33 @@ let handleResponseSuccess = function(responses) {
         if (item.selections.length > 0) {
             let start = item.selections[0].start.line
             let end = item.selections[0].end.line
-            if (end == start) {
-                end = start + 1
+
+            let code = splitCode(item.code, start - 1, end - 1);
+
+            let title = "Example " + FetchStore.getCounter() + " (Line " + start + ")"
+            if (start !== end) {
+                title = "Example " + FetchStore.getCounter() + " (Line " + start + "-" + end + ")"
             }
-
-            let code = splitCode(item.code, start, end);
-
+            
             data.push({
-                title: "title",
+                title: title,
                 userUrl: item.userUrl,
                 rawUrl: item.rawUrl,
                 codeTop: code[0],
                 codeHighlighted: code[1],
                 codeBottom:  code[2]
             })
+
+            FetchStore.setCounter(FetchStore.getCounter() + 1)
         }
     })
     
-    console.log(data)
-
-    fetchSuccess(data);
+    return data
 }
 
-var splitCode = function (codeString, startRow, endRow) {
+let splitCode = function(codeString, startRow, endRow) {
     var array = codeString.split('\n');
-
+    
     var startString = "";
     var highlightedString = "";
     var endString = "";
