@@ -1,64 +1,65 @@
-import request from 'reqwest';
-import when from 'when';
 import FetchConstants from "../constants/fetchConstants"
 import { fetchSuccess, fetchError } from "../actions/fetchActions"
-var Immutable = require('immutable');
 
 export var sendRequest = function(action) {
-    
     let typeArray = action.type.split(".")
     let pakage = action.type.substring(0, action.type.length - typeArray[typeArray.length - 1].length - 1)
 
-    console.log("got there")
-    
-    return handleResponse(when(request({
-        url: FetchConstants.FETCH_URL,
-        method: 'POST',
-        type: 'application/json',
-        data: {
-            package: pakage,
-            class: typeArray[typeArray.length -1],
-            token: action.code,
-            page: action.page
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", FetchConstants.FETCH_URL);
+    xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+            if (xmlhttp.status == 200) {
+                handleResponseSuccess(xmlhttp.responseText)
+            } else if (xmlhttp.status == 400) {
+                fetchError("Error 400 returned from server")
+            } else {
+                fetchError("Server Error: " + xmlhttp.status)
+            }
         }
-    })));
+    };
+
+    let data = {
+        'package': pakage,
+        'class': typeArray[typeArray.length - 1],
+        'method': action.code,
+        'page': action.page
+    }
+
+    xmlhttp.send(JSON.stringify(data));
 }
 
-export var handleResponse = function(responsePromise) {
-    return responsePromise
-        .then(function(responseJSON) {
-            let response = JSON.parse(responseJSON);
-            var responseArray = response.occurrences;
+let handleResponseSuccess = function(responses) {
+    let response = JSON.parse(responses);
+    let responseArray = response.occurrences;
 
-            var data = Immutable.List(responseArray)
+    let data = []
+    responseArray.forEach(item => {
+        if (item.selections.length > 0) {
+            let start = item.selections[0].start.line
+            let end = item.selections[0].end.line
+            if (end == start) {
+                end = start + 1
+            }
 
-            responseArray.map(item => {
-                if (item.selections.length > 0) {
-                    let start = item.selections[0].start.line
-                    let end = item.selections[0].end.line
-                    if (end == start) {
-                        end = start + 1
-                    }
+            let code = splitCode(item.code, start, end);
 
-                    let code = splitCode(item.code, start, end);
-
-                    return {
-                        userUrl: item.userUrl,
-                        rawUrl: item.rawUrl,
-                        codeTop: code[0],
-                        codeHighlighted: code[1],
-                        codeBottom:  code[2]
-                    }
-                }
+            data.push({
+                title: "title",
+                userUrl: item.userUrl,
+                rawUrl: item.rawUrl,
+                codeTop: code[0],
+                codeHighlighted: code[1],
+                codeBottom:  code[2]
             })
+        }
+    })
+    
+    console.log(data)
 
-            fetchSuccess(data);
-            return true
-        })
-        .catch(function(error) {
-            fetchError(error)
-            return false
-        })
+    fetchSuccess(data);
 }
 
 var splitCode = function (codeString, startRow, endRow) {

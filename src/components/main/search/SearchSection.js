@@ -94,7 +94,7 @@ export default class SearchSection extends React.Component {
                                fontSize: "1.2em",
                                color: "#C62828"
                            }}
-                           floatingLabelText={"e.g. \"inputStream.close()\""}
+                           floatingLabelText={"e.g. \"close\""}
                            floatingLabelFixed={true}
                            floatingLabelStyle={{color: "white"}}
                            style={{marginLeft: "3%", marginRight: "3%", width: "250px"}}
