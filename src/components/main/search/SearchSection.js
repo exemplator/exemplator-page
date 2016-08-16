@@ -101,7 +101,7 @@ export default class SearchSection extends React.Component {
                            onChange={this._handleCodeTextFieldChange.bind(this)}
                            id="codeTextField"
                            onKeyPress={this._handleKeyPress.bind(this)}
-                           placeholder="code" />
+                           placeholder="method" />
                 <br/>
                 <span className="search-section-text">of</span> 
                 <TextField type="text"
