@@ -36,6 +36,11 @@ export default class Home extends React.Component {
     }
     
     render () {
+        let displayIntro = "table"
+        if (this.state.codeSamples.length !== 0) {
+            displayIntro = "none"
+        }
+        
         return (
             <div className="main">
                 <div className="main-hero">
@@ -45,6 +50,11 @@ export default class Home extends React.Component {
                     <SearchSection/>
                 </div>
                 <div className="main-body">
+                    <div className="main-body-intro-message" style={{display: displayIntro}}>
+                        <div style={{display: "table-cell", verticalAlign: "middle"}}>
+                            Try me out!
+                        </div>
+                    </div>
                     {this.state.codeSamples}
                 </div>
             </div>
