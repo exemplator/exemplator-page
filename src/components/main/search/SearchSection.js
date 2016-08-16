@@ -1,8 +1,10 @@
 import React from 'react'
 import TextField from 'material-ui/TextField';
 import RaisedButton from 'material-ui/RaisedButton';
+import FetchStore from '../../../stores/fetchStore'
+import { initFetch } from '../../../actions/fetchActions'
 
-export default class Home extends React.Component {
+export default class SearchSection extends React.Component {
     constructor(props) {
         super(props)
 
@@ -11,6 +13,14 @@ export default class Home extends React.Component {
             typeText: "",
             errorText: ""
         }
+    }
+
+    componentDidMount() {
+        FetchStore.addChangeListener(this._setError.bind(this))
+    }
+
+    componentWillUnmount() {
+        FetchStore.removeChangeListener(this._setError.bind(this))
     }
 
     _handleCodeTextFieldChange(e) {
@@ -23,6 +33,16 @@ export default class Home extends React.Component {
         this.setState({
             typeText: e.target.value
         })
+    }
+    
+    _setError() {
+        let error = FetchStore.getError()
+        
+        if (error !== "") {
+            this.setState({
+                errorText: error
+            })
+        }
     }
     
     _handleSearch() {
@@ -42,6 +62,8 @@ export default class Home extends React.Component {
             return
         }
 
+        initFetch(this.state.codeText, this.state.typeText)
+        
         this.setState({
             errorText: ""
         })

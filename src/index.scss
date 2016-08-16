@@ -25,6 +25,11 @@ a {
   text-decoration: none;
 }
 
+pre {
+  margin: 0;
+  padding: 0 !important;
+}
+
 .disable-select {
   -webkit-user-select: none;
   -moz-user-select: none;

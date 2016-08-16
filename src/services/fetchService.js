@@ -67,7 +67,7 @@ var handleResponse = function (exemplatorPluginView, responseText) {
                 userUrl: item.userUrl,
                 rawUrl: item.rawUrl,
                 codeTop: code[0],
-                highlightedCode: code[1],
+                codeHighlighted: code[1],
                 codeBottom:  code[2]
             }
             data.examples.push(element)
