@@ -1,20 +1,44 @@
 {
   "name": "exemplator-page",
   "version": "1.0.0",
-  "description": "A page for Exemplator.",
+  "description": "Find java code examples from GitHub to learn how to use APIs.",
   "main": "index.html",
   "repository": {
     "type": "git",
-    "url": "git+https://bitbucket.org/sayhi-ai/landing-page"
+    "url": "git+https://github.com/exemplator/exemplator-page"
   },
   "keywords": [
+    "java",
+    "coding",
+    "assistant",
+    "example",
+    "finder",
+    "tool",
+    "code",
+    "snippet",
+    "sample",
+    "type",
+    "atom",
+    "plugin"
   ],
   "tags": [
+    "java",
+    "coding",
+    "assistant",
+    "example",
+    "finder",
+    "tool",
+    "code",
+    "snippet",
+    "sample",
+    "type",
+    "atom",
+    "plugin"
   ],
   "author": "exemplator",
   "license": "MIT",
   "bugs": {
-    "url": ""
+    "url": "https://github.com/exemplator/exemplator-page/issues"
   },
   "homepage": "https://exemplator.xyz",
   "engines": {
