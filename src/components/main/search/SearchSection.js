@@ -62,7 +62,7 @@ export default class SearchSection extends React.Component {
             return
         }
 
-        initFetch(this.state.codeText, this.state.typeText)
+        initFetch(this.state.codeText, this.state.typeText, 0)
         
         this.setState({
             errorText: ""

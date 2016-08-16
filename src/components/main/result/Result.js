@@ -2,15 +2,10 @@ import React from 'react'
 import {Card, CardHeader, CardText} from 'material-ui/Card';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/styles';
-import FetchStore from "../../../stores/fetchStore"
-var Immutable = require('immutable');
 
 export default class Result extends React.Component {
     constructor(props) {
         super(props)
-
-        this.state = {
-        }
     }
 
     render () {

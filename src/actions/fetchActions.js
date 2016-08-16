@@ -1,56 +1,16 @@
 import AppDispatcher from '../dispatchers/appDispatcher';
 import FetchConstants from '../constants/fetchConstants.js';
+import { sendRequest } from '../services/fetchService'
 
-export var initFetch = function(code, type) {
+export var initFetch = function(code, type, page) {
     let action = {
         actionType: FetchConstants.FETCH_INIT,
         code: code,
-        type: type
+        type: type,
+        page: page
     }
     
-    let results = [{
-        title: "title",
-        githubURL: "https://www.google.com",
-        rawURL: "https://www.google.com",
-        codeTop: "const woah = fun => fun + 1;\n" +
-                 "const dude = woah(2) + 3;\n" +
-                 "function thisIsAFunction() {\n",
-        codeHighlighted: "  return [1,2,3].map(n => n + 1).filter(n !== 3);\n",
-        codeBottom: "}\n" +
-                    "console.log('making up fake code is really hard');\n"
-    }, {
-        title: "title",
-        githubURL: "https://www.google.com",
-        rawURL: "https://www.google.com",
-        codeTop: "const woah = fun => fun + 1;\n" +
-        "const dude = woah(2) + 3;\n" +
-        "function thisIsAFunction() {\n",
-        codeHighlighted: "  return [1,2,3].map(n => n + 1).filter(n !== 3);\n",
-        codeBottom: "}\n" +
-        "console.log('making up fake code is really hard');\n"
-    }, {
-        title: "title",
-        githubURL: "https://www.google.com",
-        rawURL: "https://www.google.com",
-        codeTop: "const woah = fun => fun + 1;\n" +
-        "const dude = woah(2) + 3;\n" +
-        "function thisIsAFunction() {\n",
-        codeHighlighted: "  return [1,2,3].map(n => n + 1).filter(n !== 3);\n",
-        codeBottom: "}\n" +
-        "console.log('making up fake code is really hard');\n"
-    }, {
-        title: "title",
-        githubURL: "https://www.google.com",
-        rawURL: "https://www.google.com",
-        codeTop: "const woah = fun => fun + 1;\n" +
-        "const dude = woah(2) + 3;\n" +
-        "function thisIsAFunction() {\n",
-        codeHighlighted: "  return [1,2,3].map(n => n + 1).filter(n !== 3);\n",
-        codeBottom: "}\n" +
-        "console.log('making up fake code is really hard');\n"
-    }]
-    
-    fetchSuccess(results)
+    sendRequest(action)
 }
 
 export var fetchSuccess = function(results) {

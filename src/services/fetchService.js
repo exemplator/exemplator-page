@@ -1,78 +1,81 @@
-var sendRequest = function (exemplatorPluginView, request, page = 0) {
-    console.log("hi 1")
-    var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
-    xmlhttp.open("POST", "http://localhost:4567/search");
-    xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+import request from 'reqwest';
+import when from 'when';
+import FetchConstants from "../constants/fetchConstants"
+import { fetchSuccess, fetchError } from "../actions/fetchActions"
+var Immutable = require('immutable');
 
+export var sendRequest = function(action) {
+    
+    let typeArray = action.type.split(".")
+    let pakage = action.type.substring(0, action.type.length - typeArray[typeArray.length - 1].length - 1)
 
-    var dict = {}
-
-    if (false)//request.class != null && request.class.package != null)
-        dict["package"] = request.class.package.trim();
-    if (request.class != null && request.class.name != null)
-        dict["class"] = request.class.name.trim();
-    if (request.method != null)
-        dict["method"] = request.method.trim();
-    if (request.token != null)
-        dict["token"] = request.token.trim();
-    dict["page"] = page;
-
-    console.log("Dict to be sent: ");
-    console.log(dict);
-
-    xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-            if (xmlhttp.status == 200) {
-                handleResponse(exemplatorPluginView, xmlhttp.responseText);
-            }
-            else if (xmlhttp.status == 400) {
-                console.log("Error 400 returned from server");
-            }
-            else {
-                console.log("Error returned from server",xmlhttp.status);
-            }
+    console.log("got there")
+    
+    return handleResponse(when(request({
+        url: FetchConstants.FETCH_URL,
+        method: 'POST',
+        type: 'application/json',
+        data: {
+            package: pakage,
+            class: typeArray[typeArray.length -1],
+            token: action.code,
+            page: action.page
         }
-    };
-
-    var dict = {
-        'class': 'List',
-        'method': 'add',
-        'page': 0
-    }
-
-    xmlhttp.send(JSON.stringify(dict));
+    })));
 }
 
-var handleResponse = function (exemplatorPluginView, responseText) {
-    var response = JSON.parse(responseText);
-    console.log("Response from server: ");
-    console.log(response);
+export var handleResponse = function(responsePromise) {
+    return responsePromise
+        .then(function(responseJSON) {
+            let response = JSON.parse(responseJSON);
+            var responseArray = response.occurrences;
 
-    var responseArray = response.occurrences;
-    console.log(responseArray)
+            var data = Immutable.List(responseArray)
 
-    var data = {
-        examples: []
+            responseArray.map(item => {
+                if (item.selections.length > 0) {
+                    let start = item.selections[0].start.line
+                    let end = item.selections[0].end.line
+                    if (end == start) {
+                        end = start + 1
+                    }
+
+                    let code = splitCode(item.code, start, end);
+
+                    return {
+                        userUrl: item.userUrl,
+                        rawUrl: item.rawUrl,
+                        codeTop: code[0],
+                        codeHighlighted: code[1],
+                        codeBottom:  code[2]
+                    }
+                }
+            })
+
+            fetchSuccess(data);
+            return true
+        })
+        .catch(function(error) {
+            fetchError(error)
+            return false
+        })
+}
+
+var splitCode = function (codeString, startRow, endRow) {
+    var array = codeString.split('\n');
+
+    var startString = "";
+    var highlightedString = "";
+    var endString = "";
+    for (var i = 0; i < array.length; i++) {
+        if (i >= startRow - 10 && i < startRow) {
+            startString += array[i] + "\n";
+        } else if (i <= endRow && i >= startRow) {
+            highlightedString += array[i] + "\n";
+        } else if (i <= endRow + 10 && i > endRow) {
+            endString += array[i] + "\n";
+        }
     }
 
-    responseArray.forEach(item => {
-        if (item.selections.length > 0) {
-            start = item.selections[0].start.line
-            end = item.selections[0].end.line
-            if (end ==start) {
-                end = start+1
-            }
-            let code = splitCode(item.code, start, end);
-            var element = {
-                userUrl: item.userUrl,
-                rawUrl: item.rawUrl,
-                codeTop: code[0],
-                codeHighlighted: code[1],
-                codeBottom:  code[2]
-            }
-            data.examples.push(element)
-        }
-    })
-
-    exemplatorPluginView.setData(data);
+    return [startString, highlightedString, endString];
 }
