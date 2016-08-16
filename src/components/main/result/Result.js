@@ -1,5 +1,7 @@
 import React from 'react'
 import {Card, CardHeader, CardText} from 'material-ui/Card';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { tomorrow } from 'react-syntax-highlighter/dist/styles';
 
 export default class Result extends React.Component {
     constructor(props) {
@@ -14,22 +16,22 @@ export default class Result extends React.Component {
             <div className="result">
                 <Card>
                     <CardHeader
-                        title="Without Avatar"
+                        title={this.props.title}
                         subtitle={
                             <div className="result-links">
-                                <a id="github-link" href="http://www.google.com">GitHub</a>
+                                <a id="github-link" href={this.props.githubURL}>GitHub</a>
                                 <span>{" "}</span>
-                                <a id="raw-link" href="http://www.google.com">Raw</a>
+                                <a id="raw-link" href={this.props.rawURL}>Raw</a>
                             </div>
                         }
+                        style={{paddingBottom: "0"}}
                         actAsExpander={false}
                         showExpandableButton={false}
                     />
-                    <CardText expandable={false}>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                        Donec mattis pretium massa. Aliquam erat volutpat. Nulla facilisi.
-                        Donec vulputate interdum sollicitudin. Nunc lacinia auctor quam sed pellentesque.
-                        Aliquam dui mauris, mattis quis lacus id, pellentesque lobortis odio.
+                    <CardText expandable={false} style={{paddingTop: "0", paddingBottom: "0"}}>
+                        <SyntaxHighlighter language='java' style={tomorrow}>
+                            {this.props.code}
+                        </SyntaxHighlighter>
                     </CardText>
                 </Card>
             </div>

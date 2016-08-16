@@ -55,6 +55,7 @@
     "react-dom": "^0.14.6",
     "react-favicon": "0.0.4",
     "react-router": "^2.4.1",
+    "react-syntax-highlighter": "^2.2.0",
     "react-tap-event-plugin": "^0.2.2",
     "style-loader": "^0.13.1",
     "svg-inline-loader": "^0.4.1",

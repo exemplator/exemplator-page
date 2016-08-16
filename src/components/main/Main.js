@@ -5,6 +5,13 @@ import Result from "./result/Result"
 
 export default class Home extends React.Component {
     render () {
+        let code = "const woah = fun => fun + 1;\n" +
+            "const dude = woah(2) + 3;\n" +
+            "function thisIsAFunction() {\n" +
+            "  return [1,2,3].map(n => n + 1).filter(n !== 3);\n" +
+            "}\n" +
+            "console.log('making up fake code is really hard');\n"
+        
         return (
             <div className="main">
                 <div className="main-hero">
@@ -14,10 +21,22 @@ export default class Home extends React.Component {
                     <SearchSection/>
                 </div>
                 <div className="main-body">
-                    <Result/>
-                    <Result/>
-                    <Result/>
-                    <Result/>
+                    <Result title="title" 
+                            githubURL="https://www.google.com" 
+                            rawURL="https://www.google.com"
+                            code={code}/>
+                    <Result title="title"
+                            githubURL="https://www.google.com"
+                            rawURL="https://www.google.com"
+                            code={code}/>
+                    <Result title="title"
+                            githubURL="https://www.google.com"
+                            rawURL="https://www.google.com"
+                            code={code}/>
+                    <Result title="title"
+                            githubURL="https://www.google.com"
+                            rawURL="https://www.google.com"
+                            code={code}/>
                 </div>
             </div>
         )
