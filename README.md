@@ -9,4 +9,4 @@ The website can be found [here](https://exemplator.xyz).
 
 For more information see the [exemplator repository](https://github.com/exemplator/exemplator).
 
-Run ```npm install``` & ```npm start``` to host locally
+Run ```npm install``` & ```npm start``` to host locally.
