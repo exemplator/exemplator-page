@@ -22,6 +22,10 @@ export default class Pagination extends React.Component {
     }
     
     _handleLoadMore() {
+        if (this.state.isLoading) {
+            return
+        }
+        
         loadNextPage()
         
         this.setState({
