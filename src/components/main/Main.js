@@ -1,6 +1,7 @@
 import React from 'react'
 import SearchSection from "./search/SearchSection"
 import Result from "./result/Result"
+import Pagination from "./pagination/Pagination"
 import FetchStore from '../../stores/fetchStore'
 import LoadingAnimationStore from '../../stores/loadAnimationStore'
 import CircularProgress from 'material-ui/CircularProgress';
@@ -29,6 +30,18 @@ export default class Home extends React.Component {
     
     _updateCodeSamples() {
         let codeSampleList = Immutable.List(FetchStore.getCodeSamples())
+            // Remove duplicates - commented out for now because it makes things a lot more annoying
+            // .reduce((uniqArray, item) => {
+            //     if (uniqArray.some((uniqItem) => (uniqItem.codeTop === item.codeTop) 
+            //             && (uniqItem.codeHighlighted === item.codeHighlighted) 
+            //             && (uniqItem.codeBottom === item.codeBottom) )) {
+            //         console.log("same:", item)
+            //         return uniqArray
+            //     }
+            //    
+            //     uniqArray.push(item)
+            //     return uniqArray
+            // }, [])
             .map(res => <Result title={res.title}
                             githubURL={res.userUrl}
                             rawURL={res.rawUrl}
@@ -57,6 +70,7 @@ export default class Home extends React.Component {
     
     render () {
         let displayIntro = "table"
+        let pagination = <div></div>
         let centerContent
         if (this.start) {
             centerContent = "Try me out!"
@@ -65,9 +79,10 @@ export default class Home extends React.Component {
             centerContent = this.state.loadingAnimation
         } else if (this.state.codeSamples.size !== 0) {
             displayIntro = "none"
+            pagination = <Pagination/>
         } else {
             centerContent = <div>
-                                Sorry, we could not find any examples for the data you entered.
+                                Sorry, we could not find any examples of that method.
                                 <br/>
                                 Are you sure you entered everything correctly?
                             </div>
@@ -88,6 +103,7 @@ export default class Home extends React.Component {
                         </div>
                     </div>
                     {this.state.codeSamples}
+                    {pagination}
                 </div>
             </div>
         )

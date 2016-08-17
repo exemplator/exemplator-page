@@ -67,7 +67,7 @@ AppDispatcher.register(function(action) {
             break
         case FetchConstants.NEXT_PAGE_SUCCESS:
             if (action.results.size !== 0) {
-                let results = FetchStore.getCodeSamples.concat(action.results) 
+                let results = [].concat(FetchStore.getCodeSamples(), action.results)
                 FetchStore.setCodeSamples(results)
                 FetchStore.emitChange()
             }

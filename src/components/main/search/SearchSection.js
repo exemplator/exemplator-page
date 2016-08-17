@@ -1,7 +1,8 @@
 import React from 'react'
-import TextField from 'material-ui/TextField';
-import RaisedButton from 'material-ui/RaisedButton';
+import TextField from 'material-ui/TextField'
+import RaisedButton from 'material-ui/RaisedButton'
 import FetchStore from '../../../stores/fetchStore'
+import LoadingAnimationStore from '../../../stores/loadAnimationStore'
 import { initFetch } from '../../../actions/fetchActions'
 
 export default class SearchSection extends React.Component {
@@ -9,6 +10,7 @@ export default class SearchSection extends React.Component {
         super(props)
 
         this.state = {
+            isLoading: false,
             codeText: "",
             typeText: "",
             errorText: ""
@@ -17,10 +19,12 @@ export default class SearchSection extends React.Component {
 
     componentDidMount() {
         FetchStore.addChangeListener(this._setError.bind(this))
+        LoadingAnimationStore.addChangeListener(this._handleLoadingTime.bind(this))
     }
 
     componentWillUnmount() {
         FetchStore.removeChangeListener(this._setError.bind(this))
+        LoadingAnimationStore.addChangeListener(this._handleLoadingTime.bind(this))
     }
 
     _handleCodeTextFieldChange(e) {
@@ -47,6 +51,11 @@ export default class SearchSection extends React.Component {
     
     _handleSearch() {
         let error = false
+        
+        if (this.state.isLoading) {
+            return
+        }
+        
         if (this.state.codeText === "") {
             error = true
         }
@@ -66,6 +75,12 @@ export default class SearchSection extends React.Component {
         
         this.setState({
             errorText: ""
+        })
+    }
+
+    _handleLoadingTime() {
+        this.setState({
+            isLoading: LoadingAnimationStore.isLoading()
         })
     }
 
@@ -132,6 +147,7 @@ export default class SearchSection extends React.Component {
                         marginTop: "5%"
                     }}
                     labelStyle={{textTransform: "none"}}
+                    disabled={this.state.isLoading}
                     onTouchTap={this._handleSearch.bind(this)}
                 />
             </div>
