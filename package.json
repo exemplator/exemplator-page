@@ -51,10 +51,8 @@
     "events": "^1.1.1",
     "express": "^4.12.3",
     "flux": "^2.1.1",
-    "fs": "0.0.2",
     "immutable": "^3.8.1",
     "material-ui": "^0.15.0",
-    "net": "^1.0.2",
     "object-assign": "^4.1.0",
     "react": "^15.2.1",
     "react-addons": "^0.9.1-deprecated",
@@ -63,11 +61,7 @@
     "react-flux": "^1.0.1",
     "react-mixin": "^3.0.5",
     "react-router": "^2.0.0",
-    "react-tap-event-plugin": "^1.0.0",
-    "request-json": "^0.5.6",
-    "reqwest": "^2.0.5",
-    "tls": "0.0.1",
-    "when": "^3.7.7"
+    "react-tap-event-plugin": "^1.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.9.1",

@@ -2,23 +2,29 @@ import React from 'react'
 import SearchSection from "./search/SearchSection"
 import Result from "./result/Result"
 import FetchStore from '../../stores/fetchStore'
+import LoadingAnimationStore from '../../stores/loadAnimationStore'
+import CircularProgress from 'material-ui/CircularProgress';
 var Immutable = require('immutable');
 
 export default class Home extends React.Component {
     constructor(props) {
         super(props)
+        this.start = true
 
         this.state = {
+            loadingAnimation: "",
             codeSamples: []
         }
     }
 
     componentDidMount() {
         FetchStore.addChangeListener(this._updateCodeSamples.bind(this))
+        LoadingAnimationStore.addChangeListener(this._handleLoadingAnimation.bind(this))
     }
 
     componentWillUnmount() {
         FetchStore.removeChangeListener(this._updateCodeSamples.bind(this))
+        LoadingAnimationStore.addChangeListener(this._handleLoadingAnimation.bind(this))
     }
     
     _updateCodeSamples() {
@@ -35,10 +41,36 @@ export default class Home extends React.Component {
         })
     }
     
+    _handleLoadingAnimation() {
+        let isLoading = LoadingAnimationStore.isLoading()
+        
+        let animation = ""
+        if (isLoading) {
+            animation = <CircularProgress/>
+        }
+        
+        this.setState({
+            loadingAnimation: animation,
+            codeSamples: []
+        })
+    }
+    
     render () {
         let displayIntro = "table"
-        if (this.state.codeSamples.length !== 0) {
+        let centerContent
+        if (this.start) {
+            centerContent = "Try me out!"
+            this.start = false
+        } else if (this.state.loadingAnimation !== "") {
+            centerContent = this.state.loadingAnimation
+        } else if (this.state.codeSamples.size !== 0) {
             displayIntro = "none"
+        } else {
+            centerContent = <div>
+                                Sorry, we could not find any examples for the data you entered.
+                                <br/>
+                                Are you sure you entered everything correctly?
+                            </div>
         }
         
         return (
@@ -52,7 +84,7 @@ export default class Home extends React.Component {
                 <div className="main-body">
                     <div className="main-body-intro-message" style={{display: displayIntro}}>
                         <div style={{display: "table-cell", verticalAlign: "middle"}}>
-                            Try me out!
+                            {centerContent}
                         </div>
                     </div>
                     {this.state.codeSamples}

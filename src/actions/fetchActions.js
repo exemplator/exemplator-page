@@ -1,6 +1,7 @@
 import AppDispatcher from '../dispatchers/appDispatcher';
 import FetchConstants from '../constants/fetchConstants.js';
 import { sendRequest, fetchNextPage } from '../services/fetchService'
+import { startLoadingAnimation, endLoadingAnimation } from './loadAnimationActions'
 
 export var initFetch = function(code, type, page) {
     let action = {
@@ -9,7 +10,7 @@ export var initFetch = function(code, type, page) {
         type: type,
         page: page
     }
-    
+    startLoadingAnimation()
     sendRequest(action)
 }
 
@@ -18,6 +19,7 @@ export var loadNextPage = function() {
 }
 
 export var fetchSuccess = function(results) {
+    endLoadingAnimation()
     AppDispatcher.dispatch({
         actionType: FetchConstants.FETCH_SUCCESS,
         results: results
@@ -25,6 +27,7 @@ export var fetchSuccess = function(results) {
 }
 
 export var fetchError = function(error) {
+    endLoadingAnimation()
     AppDispatcher.dispatch({
         actionType: FetchConstants.FETCH_ERROR,
         error: error
