@@ -1,12 +1,13 @@
 var webpack = require('webpack');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
 var path = require('path');
 
 module.exports = {
     entry: "./src/index.js",
     module: {
         loaders: [
-            {test: /\.s?css$/, loader: "style-loader!css-loader"},
-            {test: /\.less$/, loader: "style!css!less"},
+            {test: /\.scss|\.sass|\.css$/, loaders: ["style", "css", "sass"], exclude: /node_modules/},
+            {test: /\.less$/, loader: "style!css!less", exclude: /node_modules/},
             {test: /\.ttf$|\.otf$|\.eot$|\.woff$|\.woff2$/, loader: "url-loader?limit=100000"},
             {test: /\.jpe?g$|\.png$/, loader: "file-loader"},
             {test: /\.svg$/, loader: "svg-inline"},
@@ -23,6 +24,9 @@ module.exports = {
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': '"production"'
         }),
+        new CopyWebpackPlugin([
+            { from: 'static'}
+        ]),
         new webpack.optimize.DedupePlugin(),
         new webpack.optimize.OccurenceOrderPlugin(),
         new webpack.optimize.UglifyJsPlugin({mangle: false, sourcemap: false})
