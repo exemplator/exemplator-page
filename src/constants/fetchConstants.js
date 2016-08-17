@@ -1,4 +1,4 @@
-var BASE_URL = 'https://exemplator:4567/search';
+var BASE_URL = 'https://exemplator:4567';
 export default {
     FETCH_URL: BASE_URL + "/search",
     FETCH_INIT: 'FETCH_INIT',
