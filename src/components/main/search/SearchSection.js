@@ -40,13 +40,9 @@ export default class SearchSection extends React.Component {
     }
     
     _setError() {
-        let error = FetchStore.getError()
-        
-        if (error !== "") {
-            this.setState({
-                errorText: error
-            })
-        }
+        this.setState({
+            errorText: FetchStore.getError()
+        })
     }
     
     _handleSearch() {
