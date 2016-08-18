@@ -16,9 +16,9 @@ export default class Result extends React.Component {
                         title={this.props.title}
                         subtitle={
                             <div className="result-links">
-                                <a id="github-link" href={this.props.githubURL}>GitHub</a>
+                                <a id="github-link" href={this.props.githubURL}>Repo</a>
                                 <span>{" "}</span>
-                                <a id="raw-link" href={this.props.rawURL}>Raw</a>
+                                <a id="raw-link" href={this.props.rawURL}>File</a>
                             </div>
                         }
                         style={{paddingBottom: "0"}}

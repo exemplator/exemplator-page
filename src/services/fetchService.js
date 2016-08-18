@@ -117,12 +117,12 @@ let handleResponseSuccess = function(responses) {
 }
 
 let splitCode = function(codeString, startRow, endRow) {
-    var array = codeString.split('\n');
+    let array = codeString.split('\n');
     
-    var startString = "";
-    var highlightedString = "";
-    var endString = "";
-    for (var i = 0; i < array.length; i++) {
+    let startString = "";
+    let highlightedString = "";
+    let endString = "";
+    for (let i = 0; i < array.length; i++) {
         if (i >= startRow - 10 && i < startRow) {
             startString += array[i] + "\n";
         } else if (i <= endRow && i >= startRow) {
