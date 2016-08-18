@@ -1,7 +1,13 @@
 FROM node:5.11.1
 
-# Install npm 3
-RUN npm install -g npm@3.x
+RUN     yum install -y epel-release
+RUN     yum install -y nodejs npm
+
+# Upgrade node and npm to latest version
+RUN     npm cache clean
+RUN     npm install -g n
+RUN     n stable
+RUN     curl -L https://npmjs.org/install.sh | sh
 
 # Create app directory
 RUN mkdir -p /usr/src/app
