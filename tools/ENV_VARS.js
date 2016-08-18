@@ -6,7 +6,7 @@ if (process.env.NODE_ENV !== "production") {
     }
 } else {
     ENV_VARS = {
-        SERVER_URL: "https://api.exemplator.xyz"
+        SERVER_URL: "http://104.131.79.185:4567"
     }
 }
 
