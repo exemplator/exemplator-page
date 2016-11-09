@@ -8,7 +8,9 @@ export var sendRequest = function(action) {
     FetchStore.setType(action.type)
     FetchStore.setPage(0)
     FetchStore.setCounter(1)
-    
+
+    console.log("got here")
+
     let typeArray = action.type.split(".")
     let pakage = action.type.substring(0, action.type.length - typeArray[typeArray.length - 1].length - 1)
     
@@ -20,7 +22,7 @@ export var sendRequest = function(action) {
         if (xmlhttp.readyState == XMLHttpRequest.DONE) {
             if (xmlhttp.status == 200) {
                 let data = handleResponseSuccess(xmlhttp.responseText)
-                fetchSuccess(data);
+                fetchSuccess(data.results, data.page);
             } else if (xmlhttp.status == 400) {
                 fetchError("Error 400 returned from server")
             } else {
@@ -63,8 +65,8 @@ export var fetchNextPage = function() {
         if (xmlhttp.readyState == XMLHttpRequest.DONE) {
             if (xmlhttp.status == 200) {
                 let data = handleResponseSuccess(xmlhttp.responseText)
-                FetchStore.setPage(page)
-                nextPageSuccess(data);
+                console.log("current page: " + data.page)
+                nextPageSuccess(data.results, data.page)
             } else if (xmlhttp.status == 400) {
                 fetchError("Error 400 returned from server")
             } else {
@@ -85,9 +87,11 @@ export var fetchNextPage = function() {
 
 let handleResponseSuccess = function(responses) {
     let response = JSON.parse(responses);
+    console.log("first fetch data: " + response)
     let responseArray = response.occurrences;
 
     let data = []
+    let page = response.endPage
     responseArray.forEach(item => {
         if (item.selections.length > 0) {
             let start = item.selections[0].start.line
@@ -113,7 +117,10 @@ let handleResponseSuccess = function(responses) {
         }
     })
     
-    return data
+    return {
+        results: data,
+        page: page
+    }
 }
 
 let splitCode = function(codeString, startRow, endRow) {

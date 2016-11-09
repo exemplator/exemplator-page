@@ -62,6 +62,7 @@ AppDispatcher.register(function(action) {
         case FetchConstants.FETCH_SUCCESS:
             if (action.results.size !== 0) {
                 FetchStore.setCodeSamples(action.results)
+                FetchStore.setPage(action.page)
                 FetchStore.setError("")
                 FetchStore.emitChange()
             }
@@ -70,6 +71,7 @@ AppDispatcher.register(function(action) {
             if (action.results.size !== 0) {
                 let results = [].concat(FetchStore.getCodeSamples(), action.results)
                 FetchStore.setCodeSamples(results)
+                FetchStore.setPage(action.page)
                 FetchStore.setError("")
                 FetchStore.emitChange()
             }

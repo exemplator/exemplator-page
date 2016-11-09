@@ -18,11 +18,12 @@ export var loadNextPage = function() {
     fetchNextPage()
 }
 
-export var fetchSuccess = function(results) {
+export var fetchSuccess = function(results, page) {
     endLoadingAnimation()
     AppDispatcher.dispatch({
         actionType: FetchConstants.FETCH_SUCCESS,
-        results: results
+        results: results,
+        page: page
     })
 }
 
@@ -34,9 +35,10 @@ export var fetchError = function(error) {
     })
 }
 
-export var nextPageSuccess = function(results) {
+export var nextPageSuccess = function(results, page) {
     AppDispatcher.dispatch({
         actionType: FetchConstants.NEXT_PAGE_SUCCESS,
-        results: results
+        results: results,
+        page: page
     })
 }
