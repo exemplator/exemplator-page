@@ -65,7 +65,6 @@ export var fetchNextPage = function() {
         if (xmlhttp.readyState == XMLHttpRequest.DONE) {
             if (xmlhttp.status == 200) {
                 let data = handleResponseSuccess(xmlhttp.responseText)
-                console.log("current page: " + data.page)
                 nextPageSuccess(data.results, data.page)
             } else if (xmlhttp.status == 400) {
                 fetchError("Error 400 returned from server")
@@ -87,7 +86,6 @@ export var fetchNextPage = function() {
 
 let handleResponseSuccess = function(responses) {
     let response = JSON.parse(responses);
-    console.log("first fetch data: " + response)
     let responseArray = response.occurrences;
 
     let data = []
@@ -130,11 +128,11 @@ let splitCode = function(codeString, startRow, endRow) {
     let highlightedString = "";
     let endString = "";
     for (let i = 0; i < array.length; i++) {
-        if (i >= startRow - 10 && i < startRow) {
+        if (i >= startRow - FetchConstants.SPLIT_OFFSET && i < startRow) {
             startString += array[i] + "\n";
         } else if (i <= endRow && i >= startRow) {
             highlightedString += array[i] + "\n";
-        } else if (i <= endRow + 10 && i > endRow) {
+        } else if (i <= endRow + FetchConstants.SPLIT_OFFSET && i > endRow) {
             endString += array[i] + "\n";
         }
     }

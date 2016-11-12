@@ -30,18 +30,6 @@ export default class Home extends React.Component {
     
     _updateCodeSamples() {
         let codeSampleList = Immutable.List(FetchStore.getCodeSamples())
-            // Remove duplicates - commented out for now because it makes things a lot more annoying
-            // .reduce((uniqArray, item) => {
-            //     if (uniqArray.some((uniqItem) => (uniqItem.codeTop === item.codeTop) 
-            //             && (uniqItem.codeHighlighted === item.codeHighlighted) 
-            //             && (uniqItem.codeBottom === item.codeBottom) )) {
-            //         console.log("same:", item)
-            //         return uniqArray
-            //     }
-            //    
-            //     uniqArray.push(item)
-            //     return uniqArray
-            // }, [])
             .map(res => <Result title={res.title}
                             githubURL={res.userUrl}
                             rawURL={res.rawUrl}
@@ -92,7 +80,7 @@ export default class Home extends React.Component {
             <div className="main">
                 <div className="main-hero">
                     <h1 className="main-title">Exemplator</h1>
-                    <h4 className="main-subtitle">A <span className="primary-color">Java</span> coding assistant</h4>
+                    <h4 className="main-subtitle">A search engine for <span className="primary-color">Java</span> code</h4>
 
                     <SearchSection/>
                 </div>

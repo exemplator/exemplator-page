@@ -123,14 +123,14 @@ export default class SearchSection extends React.Component {
                                fontSize: "1.2em",
                                color: "#C62828"
                            }}
-                           floatingLabelText={"e.g. \"java.io.InputStream\""}
+                           floatingLabelText={"e.g. \"java.io.InputStream\" or \"InputStream\""}
                            floatingLabelFixed={true}
-                           floatingLabelStyle={{color: "white"}}
+                           floatingLabelStyle={{color: "white", width: "305px"}}
                            style={{marginLeft: "3%", width: "300px"}}
                            onChange={this._handleTypeTextFieldChange.bind(this)}
                            id="typeTextField"
                            onKeyPress={this._handleKeyPress.bind(this)}
-                           placeholder="fully qualified type" />
+                           placeholder="type or class name" />
                 <p className="search-error-field" style={{display: errorDisplay}}>{this.state.errorText}</p>
                 <RaisedButton
                     label="Search"
