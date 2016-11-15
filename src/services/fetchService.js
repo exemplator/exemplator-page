@@ -104,8 +104,8 @@ let handleResponseSuccess = function(responses) {
             
             data.push({
                 title: title,
-                userUrl: item.userUrl,
-                rawUrl: item.rawUrl,
+                repoUrl: item.repoUrl,
+                fileUrl: item.fileUrl + "#L" + start,
                 codeTop: code[0],
                 codeHighlighted: code[1],
                 codeBottom:  code[2]
