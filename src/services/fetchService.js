@@ -9,8 +9,6 @@ export var sendRequest = function(action) {
     FetchStore.setPage(0)
     FetchStore.setCounter(1)
 
-    console.log("got here")
-
     let typeArray = action.type.split(".")
     let pakage = action.type.substring(0, action.type.length - typeArray[typeArray.length - 1].length - 1)
     
@@ -91,9 +89,9 @@ let handleResponseSuccess = function(responses) {
     let data = []
     let page = response.endPage
     responseArray.forEach(item => {
-        if (item.selections.length > 0) {
-            let start = item.selections[0].start.line
-            let end = item.selections[0].end.line
+        item.selections.forEach(selection => {
+            let start = selection.start.line
+            let end = selection.end.line
 
             let code = splitCode(item.code, start - 1, end - 1);
 
@@ -112,7 +110,7 @@ let handleResponseSuccess = function(responses) {
             })
 
             FetchStore.setCounter(FetchStore.getCounter() + 1)
-        }
+        })
     })
     
     return {
