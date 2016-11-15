@@ -1,6 +1,7 @@
 import FetchConstants from "../constants/fetchConstants"
 import FetchStore from '../stores/fetchStore'
 import { fetchSuccess, fetchError, nextPageSuccess } from "../actions/fetchActions"
+import { formatPrefix } from "../functions/formater"
 
 export var sendRequest = function(action) {
     // update store with new request
@@ -99,12 +100,12 @@ let handleResponseSuccess = function(responses) {
             if (start !== end) {
                 title = "Example " + FetchStore.getCounter() + " (Line " + start + "-" + end + ")"
             }
-            
+
             data.push({
                 title: title,
                 repoUrl: item.repoUrl,
                 fileUrl: item.fileUrl + "#L" + start,
-                codeTop: code[0],
+                codeTop: formatPrefix(code[0], '{', '}'),
                 codeHighlighted: code[1],
                 codeBottom:  code[2]
             })
