@@ -1,7 +1,7 @@
 import FetchConstants from "../constants/fetchConstants"
 import FetchStore from '../stores/fetchStore'
 import { fetchSuccess, fetchError, nextPageSuccess } from "../actions/fetchActions"
-import { formatPrefix } from "../functions/formater"
+import { format, formatPrefix, formatSuffix } from "../functions/formater"
 
 export var sendRequest = function(action) {
     // update store with new request
@@ -101,13 +101,22 @@ let handleResponseSuccess = function(responses) {
                 title = "Example " + FetchStore.getCounter() + " (Line " + start + "-" + end + ")"
             }
 
+            let formattedCode = format(code[0] + code[1] + code[2], "    ", null, '{', '}')
+            let formattedPrefix = formattedCode.slice(0, 10)
+            formattedPrefix = formatPrefix(formattedPrefix.reduce(((acc, line) => acc + '\n' + line)))
+            let formattedStart = FetchConstants.SPLIT_OFFSET
+            let formattedEnd = formattedStart + end - start + 1
+            let highlighted = formattedCode.slice(formattedStart, formattedEnd)
+            let formattedSuffix = formatSuffix(formattedCode.slice(formattedEnd)
+                .reduce(((acc, line) => acc + "\n" + line)))
+
             data.push({
                 title: title,
                 repoUrl: item.repoUrl,
                 fileUrl: item.fileUrl + "#L" + start,
-                codeTop: formatPrefix(code[0], '{', '}'),
-                codeHighlighted: code[1],
-                codeBottom:  code[2]
+                codeTop: formattedPrefix,
+                codeHighlighted: highlighted.reduce(((acc, line) => acc + "\n" + line)),
+                codeBottom: formattedSuffix
             })
 
             FetchStore.setCounter(FetchStore.getCounter() + 1)
