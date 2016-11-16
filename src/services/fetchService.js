@@ -1,7 +1,7 @@
 import FetchConstants from "../constants/fetchConstants"
 import FetchStore from '../stores/fetchStore'
 import { fetchSuccess, fetchError, nextPageSuccess } from "../actions/fetchActions"
-import { format, formatPrefix, formatSuffix } from "../functions/formater"
+import JavaFormatter from "../functions/javaFormatter"
 
 export var sendRequest = function(action) {
     // update store with new request
@@ -94,29 +94,25 @@ let handleResponseSuccess = function(responses) {
             let start = selection.start.line
             let end = selection.end.line
 
-            let code = splitCode(item.code, start - 1, end - 1);
+            let code = splitCode(item.code, start - 1, end, FetchConstants.SPLIT_OFFSET);
 
             let title = "Example " + FetchStore.getCounter() + " (Line " + start + ")"
             if (start !== end) {
                 title = "Example " + FetchStore.getCounter() + " (Line " + start + "-" + end + ")"
             }
 
-            let formattedCode = format(code[0] + code[1] + code[2], "    ", null, '{', '}')
-            let formattedPrefix = formattedCode.slice(0, 10)
-            formattedPrefix = formatPrefix(formattedPrefix.reduce(((acc, line) => acc + '\n' + line)))
-            let formattedStart = FetchConstants.SPLIT_OFFSET
-            let formattedEnd = formattedStart + end - start + 1
-            let highlighted = formattedCode.slice(formattedStart, formattedEnd)
-            let formattedSuffix = formatSuffix(formattedCode.slice(formattedEnd)
-                .reduce(((acc, line) => acc + "\n" + line)))
+            let formatter = new JavaFormatter("   ")
+            let formattedCodeArray = formatter.format(code[0] + '\n' + code[1] + '\n' + code[2])
+            let formattedCode = splitCode(formattedCodeArray, FetchConstants.SPLIT_OFFSET,
+                FetchConstants.SPLIT_OFFSET + end - start + 1, FetchConstants.SPLIT_OFFSET);
 
             data.push({
                 title: title,
                 repoUrl: item.repoUrl,
                 fileUrl: item.fileUrl + "#L" + start,
-                codeTop: formattedPrefix,
-                codeHighlighted: highlighted.reduce(((acc, line) => acc + "\n" + line)),
-                codeBottom: formattedSuffix
+                codeTop: formattedCode[0],
+                codeHighlighted: formattedCode[1],
+                codeBottom: formattedCode[2],
             })
 
             FetchStore.setCounter(FetchStore.getCounter() + 1)
@@ -129,20 +125,29 @@ let handleResponseSuccess = function(responses) {
     }
 }
 
-let splitCode = function(codeString, startRow, endRow) {
-    let array = codeString.split('\n');
-    
-    let startString = "";
-    let highlightedString = "";
-    let endString = "";
-    for (let i = 0; i < array.length; i++) {
-        if (i >= startRow - FetchConstants.SPLIT_OFFSET && i < startRow) {
-            startString += array[i] + "\n";
-        } else if (i <= endRow && i >= startRow) {
-            highlightedString += array[i] + "\n";
-        } else if (i <= endRow + FetchConstants.SPLIT_OFFSET && i > endRow) {
-            endString += array[i] + "\n";
-        }
+let splitCode = function(codeString, startRow, endRow, offset) {
+    let array
+    if (typeof codeString === 'string') {
+        array = codeString.split('\n');
+    } else {
+        array = codeString
+    }
+
+    let startArray = array.slice(startRow - offset, startRow)
+    let highlightedArray = array.slice(startRow, endRow)
+    let endArray = array.slice(endRow, endRow + offset)
+
+    let startString = ""
+    let highlightedString = ""
+    let endString = ""
+    if (startArray.length !== 0) {
+        startString = startArray.reduce(((acc, line) => acc + "\n" + line))
+    }
+    if (highlightedArray.length !== 0) {
+        highlightedString = highlightedArray.reduce(((acc, line) => acc + "\n" + line))
+    }
+    if (endArray.length !== 0) {
+        endString = endArray.reduce(((acc, line) => acc + "\n" + line))
     }
 
     return [startString, highlightedString, endString];

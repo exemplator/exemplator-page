@@ -2,7 +2,7 @@ var ENV_VARS
 
 if (process.env.NODE_ENV !== "production") {
     ENV_VARS = {
-        SERVER_URL: "http://localhost:4567"
+        SERVER_URL: "{SERVER_URL}"
     }
 } else {
     ENV_VARS = {
