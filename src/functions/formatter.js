@@ -49,7 +49,7 @@ export default class Formatter {
         return this._trimSnippet(formattedArray.reverse()).reverse()
     }
 
-    // formatPrefix(codeString, scopeEnterFunc, scopeExitFunc) {
+    // formatPrefix(scopeTree, selectionIndex) {
     //     let array = codeString.split('\n');
     //     let scopeTree = buildScopeTree(array.slice(), new ScopeNode(null, null), 0, scopeEnterFunc, scopeExitFunc)
     //
@@ -79,6 +79,16 @@ export default class Formatter {
     //     }
     //
     //     return result.reduce(((acc, line) => acc + '\n' + line))
+    // }
+    //
+    // formatSuffix() {
+    //     // Take string or array
+    //     let codeArray
+    //     if (typeof codeString === 'string') {
+    //         codeArray = codeString.split('\n')
+    //     } else {
+    //         codeArray = codeString
+    //     }
     // }
 
     _feedBucket(array, node) {

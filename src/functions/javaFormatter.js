@@ -11,6 +11,9 @@ var COMMENT_END_TOKEN = '*/'
 export default class JavaFormatter extends Formatter {
     constructor(formatUnit) {
         super(formatUnit)
+
+        this.symbolRegex = new RegExp("\\w");
+        this.symbolWithGenericsRegex = new RegExp("[\\w<>\\[\\] ,]");
     }
 
     format(codeString) {
@@ -25,7 +28,7 @@ export default class JavaFormatter extends Formatter {
             let line = codeArray[index].replace('\n', '').trim()
             return line.endsWith(EXPRESSION_TERMINATION_TOKEN)
                 || this._checkForSpecialLine(line)
-                || this._checkForFunctionSig(line)
+                || this._checkForFunction(line)
         }
 
         return false
@@ -56,8 +59,71 @@ export default class JavaFormatter extends Formatter {
             || line === ''
             || COMMENT_TOKENS.reduce((result, token) => result || line.startsWith(token), false)
     }
+    
+    _checkForFunction(line) {
+        let matchReturnPossible = true;
+        let matchReturn = false;
+        let spaceAfterReturn = false;
+        let matchFD = false;
+        let spaceAfterFD = false;
 
-    _checkForFunctionSig(line) {
-       return true
+        for (let i = 0; i < line.length; i++) {
+            let c = line[i]
+            if (!matchReturn && matchReturnPossible) {
+                if (this.symbolRegex.test(c)) {
+                    matchReturn = true;
+                }
+            } else if (matchReturn && !spaceAfterReturn) {
+                if (!this.symbolWithGenericsRegex.test(c)) {
+                    if (c === " ") {
+                        spaceAfterReturn = true;
+                    } else {
+                        matchReturn = false;
+                        matchReturnPossible = false;
+                    }
+                }
+            } else if (spaceAfterReturn && !matchFD) {
+                if (this.symbolRegex.test(c)) {
+                    matchFD = true;
+                } else if (c !== " ") {
+                    spaceAfterReturn = false;
+                    matchReturn = false;
+                    matchReturnPossible = false;
+                }
+            } else if (matchFD && !spaceAfterFD) {
+                if (c === "(") {
+                    return true;
+                } else if (this.symbolRegex.test(c)) {
+                    //Nothing
+                } else if (this.symbolWithGenericsRegex.test(c)) {
+                    matchFD = false;
+                    spaceAfterReturn = false;
+                } else {
+                    let isSpace = c === " ";
+                    matchFD = false;
+                    spaceAfterReturn = false;
+                    matchReturn = false;
+                    matchReturnPossible = isSpace;
+                }
+            } else if (spaceAfterFD) {
+                if (c === "(") {
+                    return true;
+                } else if (this.symbolRegex.test(c)) {
+                    matchFD = false;
+                    spaceAfterReturn = false;
+                } else if (c === " ") {
+                    //Nothing
+                } else {
+                    matchFD = false;
+                    spaceAfterReturn = false;
+                    matchReturn = false;
+                    matchReturnPossible = false;
+                    spaceAfterFD = false;
+                }
+            } else if (c === " ") {
+                matchReturnPossible = true;
+            }
+        }
+        return false;
     }
 }

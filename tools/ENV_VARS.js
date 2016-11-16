@@ -6,7 +6,7 @@ if (process.env.NODE_ENV !== "production") {
     }
 } else {
     ENV_VARS = {
-        SERVER_URL: "${SERVER_URL}"
+        SERVER_URL: "https://api.exemplator.xyz"
     }
 }
 
