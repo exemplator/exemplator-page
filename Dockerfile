@@ -1,7 +1,7 @@
 FROM node:5-onbuild
 
 RUN apt-get update
-RUN apt-get install gettext
+RUN yes | apt-get install gettext
 
 EXPOSE 80
 
