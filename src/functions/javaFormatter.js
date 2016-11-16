@@ -4,17 +4,13 @@ var SCOPE_ENTER_TOKEN = '{'
 var SCOPE_EXIT_TOKEN = '}'
 var EXPRESSION_TERMINATION_TOKEN = ';'
 var ANNOTATION_TOKEN = '@'
+var COMMENT_TOKENS = ['//', '*', '/**', '*/']
 var COMMENT_START_TOKEN = '/**'
 var COMMENT_END_TOKEN = '*/'
-
-var commentRegexString = "[/\*].*"
-var functionRegexString = "(\\w[\\w<>\\[\\] ,]*)+ +(\\w)+ *\\("
 
 export default class JavaFormatter extends Formatter {
     constructor(formatUnit) {
         super(formatUnit)
-        this.commentRegex = new RegExp(commentRegexString)
-        this.functionRegex = new RegExp(functionRegexString)
     }
 
     format(codeString) {
@@ -28,10 +24,8 @@ export default class JavaFormatter extends Formatter {
         if (codeArray.length > index) {
             let line = codeArray[index].replace('\n', '').trim()
             return line.endsWith(EXPRESSION_TERMINATION_TOKEN)
-                || line === ''
-                || line.startsWith(ANNOTATION_TOKEN)
-                || line.search(this.commentRegex) !== -1
-                || line.search(this.functionRegex) !== -1
+                || this._checkForSpecialLine(line)
+                || this._checkForFunctionSig(line)
         }
 
         return false
@@ -47,13 +41,23 @@ export default class JavaFormatter extends Formatter {
 
     _identifyScope(codeArray, index, token) {
         if (codeArray.length > 0) {
-            let exitIndex = codeArray[index].indexOf(token)
-            if (exitIndex !== -1) {
-                return exitIndex
+            let scopeIndex = codeArray[index].indexOf(token)
+            if (scopeIndex !== -1) {
+                return scopeIndex
             }
             return null
         } else {
             return null
         }
+    }
+
+    _checkForSpecialLine(line) {
+        return line.startsWith(ANNOTATION_TOKEN)
+            || line === ''
+            || COMMENT_TOKENS.reduce((result, token) => result || line.startsWith(token), false)
+    }
+
+    _checkForFunctionSig(line) {
+       return true
     }
 }
