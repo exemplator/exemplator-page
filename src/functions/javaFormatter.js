@@ -8,7 +8,7 @@ var COMMENT_START_TOKEN = '/**'
 var COMMENT_END_TOKEN = '*/'
 
 var commentRegexString = "[/\*].*"
-var functionRegex = "(public|private|protected|static|final|native|synchronized|abstract|transient| )*[\w<>\\[\\] ,]*\s*(\w+)*\\(.*"
+var functionRegexString = "(public|private|protected|static|final|native|synchronized|abstract|transient| )*[\w<>\\[\\] ,]*\s*(\w+[\w<>\\[\\] ,]*)+ (\w+)+\\(.*"
 
 export default class JavaFormatter extends Formatter {
     constructor(formatUnit) {
