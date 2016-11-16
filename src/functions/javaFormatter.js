@@ -6,11 +6,11 @@ var EXPRESSION_TERMINATION_TOKEN = ';'
 
 export default class JavaFormatter extends Formatter {
     constructor(formatUnit) {
-        super(formatUnit, this._expressionIdentifier, this._scopeEnterFunc, this._scopeExitFunc)
+        super(formatUnit)
     }
 
     format(codeString) {
-        format(codeString, this._expressionIdentifier, scopeEnterFunc, scopeExitFunc)
+        super.format(codeString, this._expressionIdentifier, this._scopeEnterFunc, this._scopeExitFunc)
     }
 
     _expressionIdentifier(codeArray, index) {
