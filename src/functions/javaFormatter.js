@@ -4,16 +4,17 @@ var SCOPE_ENTER_TOKEN = '{'
 var SCOPE_EXIT_TOKEN = '}'
 var EXPRESSION_TERMINATION_TOKEN = ';'
 var ANNOTATION_TOKEN = '@'
-var COMMENT_TOKENS = ['//', '*', '/**', '*/']
 var COMMENT_START_TOKEN = '/**'
 var COMMENT_END_TOKEN = '*/'
 
-
-var functionRegex = ""
+var commentRegexString = "[/\*].*"
+var functionRegexString = "(public|private|protected|static|final|native|synchronized|abstract|transient| )*[\w\<>\[\] ,]+\s+(\w+)*\(.*"
 
 export default class JavaFormatter extends Formatter {
     constructor(formatUnit) {
         super(formatUnit)
+        this.commentRegex = new RegExp(commentRegexString)
+        this.functionRegex = new RegExp(functionRegexString)
     }
 
     format(codeString) {
@@ -27,8 +28,9 @@ export default class JavaFormatter extends Formatter {
         if (codeArray.length > index) {
             let line = codeArray[index].replace('\n', '').trim()
             return line.endsWith(EXPRESSION_TERMINATION_TOKEN)
-            || line.startsWith(ANNOTATION_TOKEN)
-            || COMMENT_TOKENS.reduce((result, token) => result || line.includes(token), false)
+                || line.startsWith(ANNOTATION_TOKEN)
+                || this.commentRegex.test(line)
+                || this.functionRegex.test(line)
         }
 
         return false
