@@ -8,7 +8,7 @@ var COMMENT_START_TOKEN = '/**'
 var COMMENT_END_TOKEN = '*/'
 
 var commentRegexString = "[/\*].*"
-var functionRegexString = "(public|private|protected|static|final|native|synchronized|abstract|transient| )*[\\w<>\\[\\] ,]*(\\w[\\w<>\\[\\] ,]*)+ +(\\w)+ *\\(.*"
+var functionRegexString = "(\\w[\\w<>\\[\\] ,]*)+ +(\\w)+ *\\("
 
 export default class JavaFormatter extends Formatter {
     constructor(formatUnit) {
@@ -30,8 +30,8 @@ export default class JavaFormatter extends Formatter {
             return line.endsWith(EXPRESSION_TERMINATION_TOKEN)
                 || line === ''
                 || line.startsWith(ANNOTATION_TOKEN)
-                || this.commentRegex.test(line)
-                || this.functionRegex.test(line)
+                || line.search(this.commentRegex) !== -1
+                || line.search(this.functionRegex) !== -1
         }
 
         return false
