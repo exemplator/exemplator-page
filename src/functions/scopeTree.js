@@ -73,17 +73,16 @@ export default class ScopeTree {
             }
         }
 
+        let enterIndex = scopeEnterFunc(lines, 0)
+        let exitIndex = scopeExitFunc(lines, 0)
         let line = lines.shift()
-
-        let enterIndex = scopeEnterFunc(lines)
-        let exitIndex = scopeExitFunc(lines)
 
         if (enterIndex !== null && (enterIndex < exitIndex || exitIndex === null)) {
             let child = new ScopeTree(node, index)
             node.addChild(child)
 
             let remaining = line.substr(enterIndex + 1);
-            if (scopeEnterFunc([remaining]) !== null) {
+            if (scopeEnterFunc([remaining], 0) !== null) {
                 lines.unshift(remaining)
                 return child.build(lines, index, scopeEnterFunc, scopeExitFunc)
             } else {
@@ -106,7 +105,7 @@ export default class ScopeTree {
             return node.getParent().build(lines, index, scopeEnterFunc, scopeExitFunc)
         }
 
-        if (exitIndex !== -1) {
+        if (exitIndex !== null) {
             if (node.getParent() === null) {
                 let child = new ScopeTree(node, null)
                 child.close(index)
@@ -118,7 +117,7 @@ export default class ScopeTree {
 
             let remaining = line.substr(exitIndex + 1)
 
-            if (scopeExitFunc([remaining]) !== null) {
+            if (scopeExitFunc([remaining], 0) !== null) {
                 lines.unshift(remaining)
                 return node.getParent().build(lines, index, scopeEnterFunc, scopeExitFunc)
             } else {
