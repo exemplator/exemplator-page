@@ -89,6 +89,8 @@ let handleResponseSuccess = function(responses) {
 
     let data = []
     let page = response.endPage
+    let formatter = new JavaFormatter("   ")
+
     responseArray.forEach(item => {
         item.selections.forEach(selection => {
             let start = selection.start.line
@@ -101,7 +103,6 @@ let handleResponseSuccess = function(responses) {
                 title = "Example " + FetchStore.getCounter() + " (Line " + start + "-" + end + ")"
             }
 
-            let formatter = new JavaFormatter("   ")
             let formattedCodeArray = formatter.format(code[0] + '\n' + code[1] + '\n' + code[2])
             let formattedCode = splitCode(formattedCodeArray, FetchConstants.SPLIT_OFFSET,
                 FetchConstants.SPLIT_OFFSET + end - start + 1, FetchConstants.SPLIT_OFFSET);

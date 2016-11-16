@@ -18,7 +18,7 @@ export default class JavaFormatter extends Formatter {
     }
 
     format(codeString) {
-        super.format(codeString,
+        return super.format(codeString,
             ((codeArray, index) => this._expressionIdentifier(codeArray, index)),
             ((lines, index) => this._identifyScope(lines, index, SCOPE_ENTER_TOKEN)),
             ((lines, index) => this._identifyScope(lines, index, SCOPE_EXIT_TOKEN)))
@@ -28,6 +28,7 @@ export default class JavaFormatter extends Formatter {
         if (codeArray.length > index) {
             let line = codeArray[index].replace('\n', '').trim()
             return line.endsWith(EXPRESSION_TERMINATION_TOKEN)
+                || line === ''
                 || line.startsWith(ANNOTATION_TOKEN)
                 || this.commentRegex.test(line)
                 || this.functionRegex.test(line)
