@@ -21,16 +21,16 @@ export default class JavaFormatter extends Formatter {
     format(codeString) {
         return super.format(codeString,
             ((codeArray, index) => this._expressionIdentifier(codeArray, index)),
-            ((lines, index) => JavaFormatter._identifyScope(lines, index, SCOPE_ENTER_TOKEN)),
-            ((lines, index) => JavaFormatter._identifyScope(lines, index, SCOPE_EXIT_TOKEN)))
+            ((lines, index) => this._scopeEnterFunc(lines, index)),
+            ((lines, index) => this._scopeExitFunc(lines, index)))
     }
 
     _expressionIdentifier(codeArray, index) {
         if (codeArray.length > index) {
             let line = codeArray[index].replace('\n', '').trim()
             return line.endsWith(EXPRESSION_TERMINATION_TOKEN)
-                || this._scopeEnterFunc([line], 0)
-                || this._scopeExitFunc([line], 0)
+                || this._scopeEnterFunc([line], 0) !== null
+                || this._scopeExitFunc([line], 0) !== null
                 || this._checkForSpecialStatment(line)
         }
 
@@ -38,11 +38,11 @@ export default class JavaFormatter extends Formatter {
     }
 
     _scopeEnterFunc(codeArray, index) {
-        return JavaFormatter._identifyScope(codeArray, index, SCOPE_ENTER_TOKEN)
+        return this._identifyScope(codeArray, index, SCOPE_ENTER_TOKEN)
     }
 
     _scopeExitFunc(codeArray, index) {
-        return JavaFormatter._identifyScope(codeArray, index,SCOPE_EXIT_TOKEN)
+        return this._identifyScope(codeArray, index,SCOPE_EXIT_TOKEN)
     }
 
     _identifyScope(codeArray, index, token) {

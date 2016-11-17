@@ -34,7 +34,7 @@ export default class Formatter {
 
         for (let i = 0; i < formattedArray.length; i++) {
             if (!expressionIdentifier(formattedArray, i) && formattedArray.length > i + 1) {
-                if (scopeEnterFunc(formattedArray, i + 1) !== null && scopeExitFunc(formattedArray, i + 1) !== null) {
+                if (scopeEnterFunc(formattedArray, i + 1) === null && scopeExitFunc(formattedArray, i + 1) === null) {
                     formattedArray[i + 1] = this.formatUnit + formattedArray[i + 1]
                 }
             }

@@ -96,20 +96,19 @@ let handleResponseSuccess = function(responses) {
             let start = selection.start.line
             let end = selection.end.line
 
-            let code = splitCode(item.code, start - 1, end, FetchConstants.SPLIT_OFFSET);
+            let code = identifySelection(item.code, start - 1, end, FetchConstants.SPLIT_OFFSET);
 
             let title = "Example " + FetchStore.getCounter() + " (Line " + start + ")"
             if (start !== end) {
                 title = "Example " + FetchStore.getCounter() + " (Line " + start + "-" + end + ")"
             }
 
-            if ("DatabaseConnection dbConn = new DatabaseConnection(cont);" === code[0].trim()) {
+            if (code[1][0].includes("DatabaseConnection dbConn = new DatabaseConnection(cont);")) {
                 console.log("here")
             }
 
-            let formattedCodeArray = formatter.format(code[0] + '\n' + code[1] + '\n' + code[2])
-            let formattedCode = splitCode(formattedCodeArray, FetchConstants.SPLIT_OFFSET,
-                FetchConstants.SPLIT_OFFSET + end - start + 1, FetchConstants.SPLIT_OFFSET);
+            let formattedCodeArray = formatter.format(code[1])
+            let formattedCode = splitSelection(formattedCodeArray, code[0]);
 
             data.push({
                 title: title,
@@ -130,17 +129,36 @@ let handleResponseSuccess = function(responses) {
     }
 }
 
-let splitCode = function(codeString, startRow, endRow, offset) {
-    let array
+let identifySelection = function(codeString, startRow, endRow, offset) {
+    // Take string or array
+    let codeArray
     if (typeof codeString === 'string') {
-        array = codeString.split('\n');
+        codeArray = codeString.split('\n')
     } else {
-        array = codeString
+        codeArray = codeString
     }
 
-    let startArray = array.slice(startRow - offset, startRow)
-    let highlightedArray = array.slice(startRow, endRow)
-    let endArray = array.slice(endRow, endRow + offset)
+    return [codeArray.slice(startRow, endRow), codeArray.slice(startRow - offset, endRow + offset)]
+}
+
+let splitSelection = function(codeArray, selection) {
+    let startArray = []
+    let highlightedArray = []
+    let endArray = []
+    let selectionFound = false
+
+    codeArray.forEach(line => {
+        if (selection.length !== 0) {
+            if (selection.reduce((result, sLine) => result || line.includes(sLine.trim()), false)) {
+                selectionFound = true
+                highlightedArray.push(line)
+            } else if (selectionFound) {
+                endArray.push(line)
+            } else {
+                startArray.push(line)
+            }
+        }
+    })
 
     let startString = ""
     let highlightedString = ""
