@@ -13,7 +13,7 @@ export default class JavaFormatter extends Formatter {
         super(formatUnit)
 
         this.symbolRegex = new RegExp("\\w");
-        this.symbolWithGenericsRegex = new RegExp("[\\w<>\\[\\] ,]");
+        this.symbolWithGenericsRegex = new RegExp("[\\w<>\\[\\],]");
     }
 
     format(codeString) {

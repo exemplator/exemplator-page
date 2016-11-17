@@ -2,10 +2,6 @@ import ScopeNode from "./scopeTree"
 
 export default class Formatter {
     constructor(formatUnit) {
-        if (new.target === Formatter) {
-            throw new TypeError("Cannot construct Formatter instances directly");
-        }
-
         this.formatUnit = formatUnit
     }
 
