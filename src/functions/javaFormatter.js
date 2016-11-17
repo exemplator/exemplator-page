@@ -111,12 +111,13 @@ export default class JavaFormatter extends Formatter {
                 } else if (this.symbolWithGenericsRegex.test(c)) {
                     matchFD = false;
                     spaceAfterReturn = false;
+                } else if (c === " ") {
+                    spaceAfterFD = true
                 } else {
-                    let isSpace = c === " ";
                     matchFD = false;
                     spaceAfterReturn = false;
                     matchReturn = false;
-                    matchReturnPossible = isSpace;
+                    matchReturnPossible = false;
                 }
             } else if (spaceAfterFD) {
                 if (c === "(") {
