@@ -53,10 +53,10 @@ export default class ScopeTree {
         }
     }
 
-    traverse(acc, applyFunc) {
+    traverse(applyFunc, acc) {
         if (this.getChildren().length > 0) {
             return this.getChildren()
-                .map(node => node.traverse(acc, applyFunc))
+                .map(node => node.traverse(applyFunc, acc))
                 .reduce((acc, node) => applyFunc(node, acc))
         } else {
             return applyFunc(this, acc)

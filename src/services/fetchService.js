@@ -101,7 +101,7 @@ let handleResponseSuccess = function(responses) {
                 title = "Example " + FetchStore.getCounter() + " (Line " + start + "-" + end + ")"
             }
 
-            let formattedCode = formatter.formatSnippet(item.code, start - 1, end, FetchConstants.SPLIT_OFFSET);
+            let formattedCode = formatter.formatSnippet(item.code, start, end, FetchConstants.SPLIT_OFFSET);
 
             data.push({
                 title: title,
@@ -109,7 +109,7 @@ let handleResponseSuccess = function(responses) {
                 fileUrl: item.fileUrl + "#L" + start,
                 codeTop: formattedCode[0],
                 codeHighlighted: formattedCode[1],
-                codeBottom: formattedCode[2],
+                codeBottom: formattedCode[2]
             })
 
             FetchStore.setCounter(FetchStore.getCounter() + 1)

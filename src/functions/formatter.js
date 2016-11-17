@@ -22,14 +22,14 @@ export default class Formatter {
         let snippetPresent = startRow !== null && endRow !== null && offset !== null
         let snippet = []
         if (snippetPresent) {
-            snippet = [codeArray.slice(startRow, endRow), codeArray.slice(startRow - offset, endRow + offset)]
-            codeArray = snippet[0]
+            snippet = [codeArray.slice(startRow - 1, endRow), codeArray.slice(startRow - offset - 1, endRow + offset)]
+            codeArray = snippet[1]
         }
 
         // Build and balance the scope tree
         codeArray = codeArray.map(line => line.trim())
         let scopeTree = new ScopeNode(null, null)
-        scopeTree.build(codeArray, 0, scopeEnterFunc, scopeExitFunc)
+        scopeTree.build(codeArray.slice(), 0, scopeEnterFunc, scopeExitFunc) // copy array because it is consumed
         scopeTree.balance()
 
         // Init formatted array
@@ -58,9 +58,9 @@ export default class Formatter {
             return this._trimEnd(formattedArray)
         }
 
-        let selection = this._splitSelection(formattedArray, snippet[1])
-        let prefixResult = this._formatPrefix(scopeTree, selection[0], startRow)
-        let suffixResult = this._formatSuffix(scopeTree, selection[2], endRow)
+        let selection = this._splitSelection(formattedArray, snippet[0])
+        let prefixResult = this._formatPrefix(scopeTree, selection[0], codeArray, startRow - offset, scopeEnterFunc)
+        let suffixResult = this._formatSuffix(scopeTree, selection[2], endRow + offset)
         let range = [prefixResult[1], suffixResult[1]]
 
         let selectionString = ""
@@ -71,37 +71,36 @@ export default class Formatter {
         return [prefixResult[0], selectionString, suffixResult[0], range]
     }
 
-    _formatPrefix(scopeTree, array, oldStart) {
-        let startDefender = new ScopeNode(null, null)
-        startDefender.close(array.length)
-
-        let resultNode = scopeTree.traverse(scopeTree, ((nodeChallenger, nodeDefender) => {
-            let value = nodeDefender.getEnd()
-            if (nodeChallenger !== null && nodeChallenger.getStart() === null && nodeChallenger.getEnd() !== null) {
-                if (nodeChallenger.getEnd() < array.length) {
-                    value = Math.min(nodeChallenger.getEnd(), nodeDefender.getEnd())
-                }
-            }
-            let newDefender = new ScopeNode(null, null)
-            newDefender.close(value)
-            return newDefender
-        }), startDefender)
-
-        let limit = resultNode.getEnd()
-        if (limit === array.length) {
-            limit = -1
+    _formatPrefix(scopeTree, array, fullCode, oldStart, scopeEnterFunc) {
+        let newStart = oldStart
+        if (scopeEnterFunc([array[0].trim()], 0) === 0) {
+            array.unshift(fullCode[oldStart - 1])
+            newStart--
         }
 
+        let limit = scopeTree.getChildren()
+            .filter(node => node.getStart() === null && node.getEnd() !== null)
+            .filter(node => node.getEnd() < array.length)
+            .reduce((limit, current) => Math.max(limit, current.getEnd()), -1)
+
         let result = []
-        let offset = 0
         for (let i = 0; i < array.length; i++) {
             if (i > limit) {
-                offset++
                 result.push(array[i])
             }
         }
 
-        return [result.reduce(((acc, line) => acc + '\n' + line)), oldStart + offset]
+        result = this._trimBeginning(result)
+        let offset = array.length - result.length
+
+        if (result.length > 0) {
+            result = result.reduce(((acc, line) => acc + '\n' + line))
+        } else {
+            result = ""
+        }
+
+        newStart += offset
+        return [result, newStart]
     }
 
     _formatSuffix(scopeTree, array, oldEnd) {
@@ -120,7 +119,7 @@ export default class Formatter {
             this._fillBucketRange(array, start + 1, array.length - 1)
         }
 
-        node.getChildren().forEach(child => this._feedBucket(array, child))
+        node.getChildren().forEach(child => this._preFormatArray(array, child))
     }
 
     _fillBucketRange(array, start, end) {
