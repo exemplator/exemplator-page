@@ -80,11 +80,11 @@ export default class JavaFormatter extends Formatter {
                 }
             } else if (matchReturn && !spaceAfterReturn) {
                 if (!this.symbolWithGenericsRegex.test(c)) {
-                    if (c == "<") {
+                    if (c === "<") {
                         returnAngleBracketsOpen++;
-                    } else if (c == ">") {
+                    } else if (c === ">") {
                         returnAngleBracketsOpen--;
-                    } else if (c == " ") {
+                    } else if (c === " ") {
                         if (returnAngleBracketsOpen == 0) {
                             spaceAfterReturn = true;
                         } else {
