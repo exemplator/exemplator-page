@@ -5,33 +5,46 @@ export default class Formatter {
         this.formatUnit = formatUnit
     }
 
-    format(codeString, expressionIdentifier, scopeEnterFunc, scopeExitFunc) {
+    format(code, expressionIdentifier, scopeEnterFunc, scopeExitFunc) {
+        return this.formatSnippet(code, null, null, null, expressionIdentifier, scopeEnterFunc, scopeExitFunc)
+    }
+
+    formatSnippet(code, startRow, endRow, offset, expressionIdentifier, scopeEnterFunc, scopeExitFunc) {
         // Take string or array
         let codeArray
-        if (typeof codeString === 'string') {
-            codeArray = codeString.split('\n')
+        if (typeof code === 'string') {
+            codeArray = code.split('\n')
         } else {
-            codeArray = codeString
+            codeArray = code
+        }
+
+        // In case we have a snippet, find the snippet
+        let snippetPresent = startRow !== null && endRow !== null && offset !== null
+        let snippet = []
+        if (snippetPresent) {
+            snippet = [codeArray.slice(startRow, endRow), codeArray.slice(startRow - offset, endRow + offset)]
+            codeArray = snippet[0]
         }
 
         // Build and balance the scope tree
         codeArray = codeArray.map(line => line.trim())
         let scopeTree = new ScopeNode(null, null)
-        scopeTree.build(codeArray.slice(), 0, scopeEnterFunc, scopeExitFunc)
+        scopeTree.build(codeArray, 0, scopeEnterFunc, scopeExitFunc)
         scopeTree.balance()
 
-        // Init array
+        // Init formatted array
         let formattedArray = []
         for (let i = 0; i < codeArray.length; i++) {
             formattedArray[i] = ""
         }
+        this._preFormatArray(formattedArray, scopeTree, this.formatUnit)
 
-        this._feedBucket(formattedArray, scopeTree, this.formatUnit)
-
+        // Fill formatted array with code
         for (let i = 0; i < codeArray.length; i++) {
             formattedArray[i] += codeArray[i]
         }
 
+        // Add spaces after lines that do not qualify as an expression (e.g. let str = "hello" +)
         for (let i = 0; i < formattedArray.length; i++) {
             if (!expressionIdentifier(formattedArray, i) && formattedArray.length > i + 1) {
                 if (scopeEnterFunc(formattedArray, i + 1) === null && scopeExitFunc(formattedArray, i + 1) === null) {
@@ -40,53 +53,62 @@ export default class Formatter {
             }
         }
 
-        formattedArray = this._trimSnippet(formattedArray)
-        return this._trimSnippet(formattedArray.reverse()).reverse()
+        if (!snippetPresent) {
+            formattedArray = this._trimBeginning(formattedArray)
+            return this._trimEnd(formattedArray)
+        }
+
+        let selection = this._splitSelection(formattedArray, snippet[1])
+        let prefixResult = this._formatPrefix(scopeTree, selection[0], startRow)
+        let suffixResult = this._formatSuffix(scopeTree, selection[2], endRow)
+        let range = [prefixResult[1], suffixResult[1]]
+
+        let selectionString = ""
+        if (selection[1].length > 0) {
+            selectionString = selection[1].reduce(((acc, line) => acc + '\n' + line))
+        }
+
+        return [prefixResult[0], selectionString, suffixResult[0], range]
     }
 
-    // formatPrefix(scopeTree, selectionIndex) {
-    //     let array = codeString.split('\n');
-    //     let scopeTree = buildScopeTree(array.slice(), new ScopeNode(null, null), 0, scopeEnterFunc, scopeExitFunc)
-    //
-    //     let startDefender = new ScopeNode(null, null)
-    //     startDefender.close(array.length)
-    //
-    //     let resultNode = this._traverseScopeTree(scopeTree, ((nodeChallenger, nodeDefender) => {
-    //         let value = nodeDefender.getEnd()
-    //         if (nodeChallenger !== null && nodeChallenger.getStart() === null && nodeChallenger.getEnd() !== null) {
-    //             value = Math.min(nodeChallenger.getEnd(), nodeDefender.getEnd())
-    //         }
-    //         let newDefender = new ScopeNode(null, null)
-    //         newDefender.close(value)
-    //         return newDefender
-    //     }), startDefender)
-    //
-    //     let limit = resultNode.getEnd()
-    //     if (limit === array.length) {
-    //         limit = -1
-    //     }
-    //
-    //     let result = []
-    //     for (let i = 0; i < array.length; i++) {
-    //         if (i > limit) {
-    //             result.push(array[i])
-    //         }
-    //     }
-    //
-    //     return result.reduce(((acc, line) => acc + '\n' + line))
-    // }
-    //
-    // formatSuffix() {
-    //     // Take string or array
-    //     let codeArray
-    //     if (typeof codeString === 'string') {
-    //         codeArray = codeString.split('\n')
-    //     } else {
-    //         codeArray = codeString
-    //     }
-    // }
+    _formatPrefix(scopeTree, array, oldStart) {
+        let startDefender = new ScopeNode(null, null)
+        startDefender.close(array.length)
 
-    _feedBucket(array, node) {
+        let resultNode = scopeTree.traverse(scopeTree, ((nodeChallenger, nodeDefender) => {
+            let value = nodeDefender.getEnd()
+            if (nodeChallenger !== null && nodeChallenger.getStart() === null && nodeChallenger.getEnd() !== null) {
+                if (nodeChallenger.getEnd() < array.length) {
+                    value = Math.min(nodeChallenger.getEnd(), nodeDefender.getEnd())
+                }
+            }
+            let newDefender = new ScopeNode(null, null)
+            newDefender.close(value)
+            return newDefender
+        }), startDefender)
+
+        let limit = resultNode.getEnd()
+        if (limit === array.length) {
+            limit = -1
+        }
+
+        let result = []
+        let offset = 0
+        for (let i = 0; i < array.length; i++) {
+            if (i > limit) {
+                offset++
+                result.push(array[i])
+            }
+        }
+
+        return [result.reduce(((acc, line) => acc + '\n' + line)), oldStart + offset]
+    }
+
+    _formatSuffix(scopeTree, array, oldEnd) {
+        return [array.reduce(((acc, line) => acc + '\n' + line)), oldEnd]
+    }
+
+    _preFormatArray(array, node) {
         let start = node.getStart()
         let end = node.getEnd()
 
@@ -107,16 +129,55 @@ export default class Formatter {
         }
     }
 
-    _trimSnippet(codeArray) {
+    _trimBeginning(codeArray) {
         let canTrim = true
+
+        while (canTrim) {
+            let line = codeArray[0]
+            if (line === "\n" || line.trim() === "") {
+                codeArray.shift();
+            } else {
+                canTrim = false
+            }
+        }
+
         return codeArray
-            .filter(line => {
-                if (canTrim && (line === "\n" || line.trim() === "")) {
-                    return false
+    }
+
+    _trimEnd(codeArray) {
+        let canTrim = true
+
+        while (canTrim) {
+            let line = codeArray[codeArray.length - 1]
+            if (line === "\n" || line.trim() === "") {
+                codeArray.pop()
+            } else {
+                canTrim = false
+            }
+        }
+
+        return codeArray
+    }
+
+    _splitSelection(codeArray, selection) {
+        let startArray = []
+        let selectionArray = []
+        let endArray = []
+        let selectionFound = false
+
+        codeArray.forEach(line => {
+            if (selection.length !== 0) {
+                if (selection.reduce((result, sLine) => result || line.includes(sLine.trim()), false)) {
+                    selectionFound = true
+                    selectionArray.push(line)
+                } else if (selectionFound) {
+                    endArray.push(line)
                 } else {
-                    canTrim = false
-                    return true
+                    startArray.push(line)
                 }
-            })
+            }
+        })
+
+        return [startArray, selectionArray, endArray];
     }
 }

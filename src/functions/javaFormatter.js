@@ -19,7 +19,11 @@ export default class JavaFormatter extends Formatter {
     }
 
     format(codeString) {
-        return super.format(codeString,
+        return this.formatSnippet(codeString, null, null, null)
+    }
+
+    formatSnippet(code, startRow, endRow, offset) {
+        return super.formatSnippet(code, startRow, endRow, offset,
             ((codeArray, index) => this._expressionIdentifier(codeArray, index)),
             ((lines, index) => this._scopeEnterFunc(lines, index)),
             ((lines, index) => this._scopeExitFunc(lines, index)))
