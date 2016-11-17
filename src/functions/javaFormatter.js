@@ -4,9 +4,11 @@ var SCOPE_ENTER_TOKEN = '{'
 var SCOPE_EXIT_TOKEN = '}'
 var EXPRESSION_TERMINATION_TOKEN = ';'
 var ANNOTATION_TOKEN = '@'
-var COMMENT_TOKENS = ['//', '*', '/**', '*/']
 var COMMENT_START_TOKEN = '/**'
+var COMMENT_BODY_TOKEN = '*'
 var COMMENT_END_TOKEN = '*/'
+var COMMENT_SIMPLE_TOKEN = '//'
+var COMMENT_TOKENS = [COMMENT_START_TOKEN, COMMENT_BODY_TOKEN, COMMENT_END_TOKEN, COMMENT_SIMPLE_TOKEN]
 
 export default class JavaFormatter extends Formatter {
     constructor(formatUnit) {
@@ -27,7 +29,9 @@ export default class JavaFormatter extends Formatter {
         if (codeArray.length > index) {
             let line = codeArray[index].replace('\n', '').trim()
             return line.endsWith(EXPRESSION_TERMINATION_TOKEN)
-                || this._checkForSpecialLine(line)
+                || this._scopeEnterFunc([line], 0)
+                || this._scopeExitFunc([line], 0)
+                || this._checkForSpecialStatment(line)
                 || this._checkForFunction(line)
         }
 
@@ -54,7 +58,7 @@ export default class JavaFormatter extends Formatter {
         }
     }
 
-    _checkForSpecialLine(line) {
+    _checkForSpecialStatment(line) {
         return line.startsWith(ANNOTATION_TOKEN)
             || line === ''
             || COMMENT_TOKENS.reduce((result, token) => result || line.startsWith(token), false)
