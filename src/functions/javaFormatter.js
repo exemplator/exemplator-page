@@ -21,8 +21,8 @@ export default class JavaFormatter extends Formatter {
     format(codeString) {
         return super.format(codeString,
             ((codeArray, index) => this._expressionIdentifier(codeArray, index)),
-            ((lines, index) => this._identifyScope(lines, index, SCOPE_ENTER_TOKEN)),
-            ((lines, index) => this._identifyScope(lines, index, SCOPE_EXIT_TOKEN)))
+            ((lines, index) => JavaFormatter._identifyScope(lines, index, SCOPE_ENTER_TOKEN)),
+            ((lines, index) => JavaFormatter._identifyScope(lines, index, SCOPE_EXIT_TOKEN)))
     }
 
     _expressionIdentifier(codeArray, index) {
@@ -32,18 +32,17 @@ export default class JavaFormatter extends Formatter {
                 || this._scopeEnterFunc([line], 0)
                 || this._scopeExitFunc([line], 0)
                 || this._checkForSpecialStatment(line)
-                || this._checkForFunction(line)
         }
 
         return false
     }
 
     _scopeEnterFunc(codeArray, index) {
-        return this._identifyScope(codeArray, index, SCOPE_ENTER_TOKEN)
+        return JavaFormatter._identifyScope(codeArray, index, SCOPE_ENTER_TOKEN)
     }
 
     _scopeExitFunc(codeArray, index) {
-        return this._identifyScope(codeArray, index,SCOPE_EXIT_TOKEN)
+        return JavaFormatter._identifyScope(codeArray, index,SCOPE_EXIT_TOKEN)
     }
 
     _identifyScope(codeArray, index, token) {

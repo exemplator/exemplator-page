@@ -103,6 +103,10 @@ let handleResponseSuccess = function(responses) {
                 title = "Example " + FetchStore.getCounter() + " (Line " + start + "-" + end + ")"
             }
 
+            if ("DatabaseConnection dbConn = new DatabaseConnection(cont);" === code[0].trim()) {
+                console.log("here")
+            }
+
             let formattedCodeArray = formatter.format(code[0] + '\n' + code[1] + '\n' + code[2])
             let formattedCode = splitCode(formattedCodeArray, FetchConstants.SPLIT_OFFSET,
                 FetchConstants.SPLIT_OFFSET + end - start + 1, FetchConstants.SPLIT_OFFSET);
