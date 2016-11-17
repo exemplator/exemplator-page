@@ -15,7 +15,7 @@ export default class JavaFormatter extends Formatter {
         super(formatUnit)
 
         this.symbolRegex = new RegExp("\\w");
-        this.symbolWithGenericsRegex = new RegExp("[\\w<>\\[\\],]");
+        this.symbolWithGenericsRegex = new RegExp("[\\w\\[\\],]");
     }
 
     format(codeString) {
@@ -67,6 +67,7 @@ export default class JavaFormatter extends Formatter {
     _checkForFunction(line) {
         let matchReturnPossible = true;
         let matchReturn = false;
+        let returnAngleBracketsOpen = 0;
         let spaceAfterReturn = false;
         let matchFD = false;
         let spaceAfterFD = false;
@@ -79,11 +80,20 @@ export default class JavaFormatter extends Formatter {
                 }
             } else if (matchReturn && !spaceAfterReturn) {
                 if (!this.symbolWithGenericsRegex.test(c)) {
-                    if (c === " ") {
-                        spaceAfterReturn = true;
+                    if (c === "<") {
+                        returnAngleBracketsOpen++;
+                    } else if (c === ">") {
+                        returnAngleBracketsOpen--;
+                    } else if (c === " ") {
+                        if (returnAngleBracketsOpen == 0) {
+                            spaceAfterReturn = true;
+                        } else {
+                            //Nothing
+                        }
                     } else {
                         matchReturn = false;
                         matchReturnPossible = false;
+                        returnAngleBracketsOpen = 0;
                     }
                 }
             } else if (spaceAfterReturn && !matchFD) {
