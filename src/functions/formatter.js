@@ -6,10 +6,10 @@ export default class Formatter {
     }
 
     format(code, expressionIdentifier, scopeEnterFunc, scopeExitFunc) {
-        return this.formatSnippet(code, null, null, null, expressionIdentifier, scopeEnterFunc, scopeExitFunc)
+        return this.formatSnippet(code, null, null, null, expressionIdentifier, scopeEnterFunc, scopeExitFunc, null)
     }
 
-    formatSnippet(code, startRow, endRow, offset, expressionIdentifier, scopeEnterFunc, scopeExitFunc) {
+    formatSnippet(code, startRow, endRow, offset, expressionIdentifier, scopeEnterFunc, scopeExitFunc, identifyMethodSigFunc) {
         // Take string or array
         let codeArray
         if (typeof code === 'string') {
@@ -59,7 +59,7 @@ export default class Formatter {
         }
 
         let selection = this._splitSelection(formattedArray, snippet[0])
-        let prefixResult = this._formatPrefix(scopeTree, selection[0], codeArray, startRow - offset, scopeEnterFunc)
+        let prefixResult = this._formatPrefix(scopeTree, selection[0], codeArray, startRow - offset, scopeEnterFunc, identifyMethodSigFunc)
         let suffixResult = this._formatSuffix(scopeTree, selection[2], endRow + offset)
         let range = [prefixResult[1], suffixResult[1]]
 
@@ -71,12 +71,16 @@ export default class Formatter {
         return [prefixResult[0], selectionString, suffixResult[0], range]
     }
 
-    _formatPrefix(scopeTree, array, fullCode, oldStart, scopeEnterFunc) {
+    _formatPrefix(scopeTree, array, fullCode, oldStart, scopeEnterFunc, identifyMethodSigFunc) {
         let newStart = oldStart
+        let originalLength = array.length
+        array = this._trimBeginning(array) // Just for super edge cases
         if (scopeEnterFunc([array[0].trim()], 0) === 0) {
             array.unshift(fullCode[oldStart - 1])
             newStart--
         }
+
+        array = this._removeExtraMethodSigAbove(array, scopeEnterFunc, identifyMethodSigFunc)
 
         let limit = scopeTree.getChildren()
             .filter(node => node.getStart() === null && node.getEnd() !== null)
@@ -91,7 +95,7 @@ export default class Formatter {
         }
 
         result = this._trimBeginning(result)
-        let offset = array.length - result.length
+        let offset = originalLength - result.length
 
         if (result.length > 0) {
             result = result.reduce(((acc, line) => acc + '\n' + line))
@@ -126,6 +130,31 @@ export default class Formatter {
         for (let i = start; i <= end; i++) {
             array[i] += this.formatUnit
         }
+    }
+
+    _removeExtraMethodSigAbove(codeArray, scopeEnterFunc, identifyMethodSigFunc) {
+        let methodSigCount = 0
+        let index = codeArray.length - 1
+        while (index >= 0) {
+            let line = codeArray[index]
+            if (identifyMethodSigFunc(line) && methodSigCount === 0) {
+                methodSigCount++
+            } else if(identifyMethodSigFunc(line) && methodSigCount === 1) {
+                codeArray.splice(index, 1)
+                methodSigCount++
+            } else if(scopeEnterFunc([line], 0) !== null && index - 1 > 0 && methodSigCount === 1) {
+                if (identifyMethodSigFunc(codeArray[index - 1])) {
+                    codeArray.splice(index, 1)
+                    methodSigCount++
+                }
+            } else if(methodSigCount > 1) {
+                codeArray.splice(index, 1)
+            }
+
+            index--
+        }
+
+        return codeArray
     }
 
     _trimBeginning(codeArray) {

@@ -26,7 +26,8 @@ export default class JavaFormatter extends Formatter {
         return super.formatSnippet(code, startRow, endRow, offset,
             ((codeArray, index) => this._expressionIdentifier(codeArray, index)),
             ((lines, index) => this._scopeEnterFunc(lines, index)),
-            ((lines, index) => this._scopeExitFunc(lines, index)))
+            ((lines, index) => this._scopeExitFunc(lines, index)),
+            (line => this._checkForFunction(line)))
     }
 
     _expressionIdentifier(codeArray, index) {
@@ -66,7 +67,7 @@ export default class JavaFormatter extends Formatter {
             || line === ''
             || COMMENT_TOKENS.reduce((result, token) => result || line.startsWith(token), false)
     }
-    
+
     _checkForFunction(line) {
         let matchReturnPossible = true;
         let matchReturn = false;
