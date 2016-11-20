@@ -101,7 +101,7 @@ let handleResponseSuccess = function(responses) {
                 title = "Example " + FetchStore.getCounter() + " (Line " + start + "-" + end + ")"
             }
 
-            //try {
+            try {
                 let formattedCode = formatter.formatSnippet(item.code, start, end, FetchConstants.SPLIT_OFFSET);
 
                 if (formattedCode[0].split('\n').length + formattedCode[1].split('\n').length
@@ -117,9 +117,9 @@ let handleResponseSuccess = function(responses) {
 
                     FetchStore.setCounter(FetchStore.getCounter() + 1)
                 }
-            //} catch (e) {
-            //    console.log("Unable to format and add code: " + e)
-            //}
+            } catch (e) {
+               console.log("Unable to format and add code: " + e)
+            }
         })
     })
     

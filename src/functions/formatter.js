@@ -1,6 +1,7 @@
 import ScopeNode from "./scopeTree"
 
 export default class Formatter {
+
     constructor(formatUnit) {
         this.formatUnit = formatUnit
         this.fullCodeArray = ''
