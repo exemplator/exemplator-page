@@ -38,11 +38,11 @@ export default class Formatter {
         let codeArray = this.fullCodeArray
 
         // In case we have a snippet, find the snippet
-        let snippetPresent = startRow !== null && endRow !== null && offset !== null
+        let snippetPresent = this.startSelection !== null && this.endSelection !== null && offset !== null
         let snippet = []
         if (snippetPresent) {
-            snippet = [this.fullCodeArray.slice(startRow - 1, endRow), this.fullCodeArray
-                .slice(startRow - offset - 1, endRow + offset)]
+            snippet = [this.fullCodeArray.slice(this.startSelection - 1, this.endSelection), this.fullCodeArray
+                .slice(this.startSelection - offset - 1, this.endSelection + offset)]
             codeArray = this._preFormatSnippet(snippet[1], snippet[0])
         }
 
@@ -73,16 +73,19 @@ export default class Formatter {
             }
         }
 
+        // If we don't have a snippet, return the result now
         if (!snippetPresent) {
             formattedArray = this._trimBeginning(formattedArray)
             return this._trimEnd(formattedArray)
         }
 
+        // Format prefix and suffix
         let selection = this._splitSelection(formattedArray, snippet[0])
-        let prefixResult = this._formatPrefix(scopeTree, selection[0], code, startRow - selection[0].length)
-        let suffixResult = this._formatSuffix(selection[2], endRow + selection[2].length)
+        let prefixResult = this._formatPrefix(scopeTree, selection[0], code, this.startSelection - selection[0].length)
+        let suffixResult = this._formatSuffix(selection[2], this.endSelection + selection[2].length)
         let range = [prefixResult[1], suffixResult[1]]
 
+        // Turn array into string
         let selectionString = ""
         if (selection[1].length > 0) {
             selectionString = selection[1].reduce(((acc, line) => acc + '\n' + line))
