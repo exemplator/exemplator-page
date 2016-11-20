@@ -101,18 +101,25 @@ let handleResponseSuccess = function(responses) {
                 title = "Example " + FetchStore.getCounter() + " (Line " + start + "-" + end + ")"
             }
 
-            let formattedCode = formatter.formatSnippet(item.code, start, end, FetchConstants.SPLIT_OFFSET);
+            try {
+                let formattedCode = formatter.formatSnippet(item.code, start, end, FetchConstants.SPLIT_OFFSET);
 
-            data.push({
-                title: title,
-                repoUrl: item.repoUrl,
-                fileUrl: item.fileUrl + "#L" + start,
-                codeTop: formattedCode[0],
-                codeHighlighted: formattedCode[1],
-                codeBottom: formattedCode[2]
-            })
+                if (formattedCode[0].split('\n').length + formattedCode[1].split('\n').length
+                    + formattedCode[2].split('\n').length >= FetchConstants.MIN_LINES) {
+                    data.push({
+                        title: title,
+                        repoUrl: item.repoUrl,
+                        fileUrl: item.fileUrl + "#L" + start,
+                        codeTop: formattedCode[0],
+                        codeHighlighted: formattedCode[1],
+                        codeBottom: formattedCode[2]
+                    })
 
-            FetchStore.setCounter(FetchStore.getCounter() + 1)
+                    FetchStore.setCounter(FetchStore.getCounter() + 1)
+                }
+            } catch (e) {
+                console.log("Unable to format and add code: " + e)
+            }
         })
     })
     

@@ -9,14 +9,8 @@ export default class Formatter {
         return this.formatSnippet(code, null, null, null, expressionIdentifier, scopeEnterFunc, scopeExitFunc, null, null)
     }
 
-    formatSnippet(code, startRow, endRow, offset, expressionIdentifier, scopeEnterFunc, scopeExitFunc, identifyMethodSigFunc, identifySpecialStatement) {
-        // Take string or array
-        let codeArray
-        if (typeof code === 'string') {
-            codeArray = code.split('\n')
-        } else {
-            codeArray = code
-        }
+    formatSnippet(code, startRow, endRow, offset, expressionIdentifier, scopeEnterFunc, scopeExitFunc, identifyMethodSigFunc, identifySpecialStatement, startCommentToken, bodyCommentToken) {
+        let codeArray = code.split('\n')
 
         // In case we have a snippet, find the snippet
         let snippetPresent = startRow !== null && endRow !== null && offset !== null
@@ -59,8 +53,8 @@ export default class Formatter {
         }
 
         let selection = this._splitSelection(formattedArray, snippet[0])
-        let prefixResult = this._formatPrefix(scopeTree, selection[0], codeArray, startRow - offset)
-        let suffixResult = this._formatSuffix(selection[2], endRow + offset, identifySpecialStatement)
+        let prefixResult = this._formatPrefix(scopeTree, selection[0], code, startRow - selection[0].length, startCommentToken, bodyCommentToken)
+        let suffixResult = this._formatSuffix(selection[2], endRow + selection[2].length, identifySpecialStatement)
         let range = [prefixResult[1], suffixResult[1]]
 
         let selectionString = ""
@@ -78,7 +72,7 @@ export default class Formatter {
         return prefixArray.concat(snippet[1].concat(suffixArray))
     }
 
-    _formatPrefix(scopeTree, array, fullCode, oldStart) {
+    _formatPrefix(scopeTree, array, fullCode, oldStart, startCommentToken, bodyCommentToken) {
         let originalLength = array.length
 
         let limit = scopeTree.getChildren()
@@ -93,8 +87,11 @@ export default class Formatter {
             }
         }
 
-        result = this._trimBeginning(result)
         let offset = originalLength - result.length
+        result = this._handleOpenComments(result, fullCode.split('\n'), oldStart + offset, startCommentToken, bodyCommentToken)
+
+        result = this._trimBeginning(result)
+        offset = originalLength - result.length
 
         if (result.length > 0) {
             result = result.reduce(((acc, line) => acc + '\n' + line))
@@ -111,7 +108,7 @@ export default class Formatter {
         let index = codeArray.length - 1
         while (index >= 0) {
             let line = codeArray[index].trim()
-            if(identifySpecialStatement(line)) {
+            if(identifySpecialStatement(line) && line !== '') {
                 codeArray.splice(index, 1)
             }
 
@@ -142,6 +139,15 @@ export default class Formatter {
     _fillBucketRange(array, start, end) {
         for (let i = start; i <= end; i++) {
             array[i] += this.formatUnit
+        }
+    }
+
+    _handleOpenComments(codeArray, fullCode, startLine, startCommentToken, bodyCommentToken) {
+        if (codeArray.length > 0 && startLine < fullCode.length && codeArray[0].trim().startsWith(bodyCommentToken)) {
+            codeArray.unshift(fullCode[startLine].trim())
+            return this._handleOpenComments(codeArray, fullCode, startLine - 1, startCommentToken, bodyCommentToken)
+        } else {
+            return codeArray
         }
     }
 
@@ -193,7 +199,7 @@ export default class Formatter {
     _trimBeginning(codeArray) {
         let canTrim = true
 
-        while (canTrim) {
+        while (canTrim && codeArray.length > 0) {
             let line = codeArray[0]
             if (line === "\n" || line.trim() === "") {
                 codeArray.shift();
@@ -208,7 +214,7 @@ export default class Formatter {
     _trimEnd(codeArray) {
         let canTrim = true
 
-        while (canTrim) {
+        while (canTrim && codeArray.length > 0) {
             let line = codeArray[codeArray.length - 1]
             if (line === "\n" || line.trim() === "") {
                 codeArray.pop()

@@ -27,7 +27,8 @@ export default class JavaFormatter extends Formatter {
             ((lines, index) => this._scopeEnterFunc(lines, index)),
             ((lines, index) => this._scopeExitFunc(lines, index)),
             (line => this._checkForFunction(line)),
-            (line => this._checkForSpecialStatement(line)))
+            (line => this._checkForSpecialStatement(line)),
+            COMMENT_START_TOKEN, COMMENT_BODY_TOKEN)
     }
 
     _expressionIdentifier(codeArray, index) {
