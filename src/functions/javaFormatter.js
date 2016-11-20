@@ -5,10 +5,11 @@ var SCOPE_EXIT_TOKEN = '}'
 var EXPRESSION_TERMINATION_TOKEN = ';'
 var ANNOTATION_TOKEN = '@'
 var COMMENT_START_TOKEN = '/**'
+var COMMENT_START_TOKEN_2 = '/*'
 var COMMENT_BODY_TOKEN = '*'
 var COMMENT_END_TOKEN = '*/'
 var COMMENT_SIMPLE_TOKEN = '//'
-var COMMENT_TOKENS = [COMMENT_START_TOKEN, COMMENT_BODY_TOKEN, COMMENT_END_TOKEN, COMMENT_SIMPLE_TOKEN]
+var COMMENT_TOKENS = [COMMENT_START_TOKEN, COMMENT_START_TOKEN_2, COMMENT_BODY_TOKEN, COMMENT_END_TOKEN, COMMENT_SIMPLE_TOKEN]
 var PROTECTED_NON_METHOD_TOKENS = ['return', 'new']
 
 export default class JavaFormatter extends Formatter {
@@ -30,7 +31,7 @@ export default class JavaFormatter extends Formatter {
             ((lines, index) => this._scopeExitFunc(lines, index)),
             (line => this._checkForFunction(line)),
             (line => this._checkForSpecialStatement(line)),
-            COMMENT_BODY_TOKEN)
+            COMMENT_BODY_TOKEN, COMMENT_SIMPLE_TOKEN)
     }
 
     _expressionIdentifier(codeArray, index) {

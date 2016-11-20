@@ -10,6 +10,7 @@ export default class Formatter {
         this.endSelection = 0
         this.snippetOffset = 0
         this.bodyCommentToken = ''
+        this.simpleCommentToken = ''
 
         this.expressionIdentifier = null
         this.scopeEnterFunc = null
@@ -23,8 +24,8 @@ export default class Formatter {
             scopeExitFunc, null, null)
     }
 
-    formatSnippet(code, startRow, endRow, offset, expressionIdentifier, scopeEnterFunc,
-                  scopeExitFunc, identifyMethodSigFunc, identifySpecialStatement, bodyCommentToken) {
+    formatSnippet(code, startRow, endRow, offset, expressionIdentifier, scopeEnterFunc, scopeExitFunc,
+                  identifyMethodSigFunc, identifySpecialStatement, bodyCommentToken, simpleCommentToken) {
         // Initialize
         this.fullCodeArray = code.split('\n')
         this.startSelection = startRow
@@ -36,6 +37,7 @@ export default class Formatter {
         this.identifyMethodSigFunc = identifyMethodSigFunc
         this.identifySpecialStatement = identifySpecialStatement
         this.bodyCommentToken = bodyCommentToken
+        this.simpleCommentToken = simpleCommentToken
 
         let codeArray = this.fullCodeArray
 
@@ -131,12 +133,15 @@ export default class Formatter {
 
     _formatSuffix(codeArray, oldEnd) {
         let originalLength = codeArray.length
-
+        let codeFound = false
         let index = codeArray.length - 1
         while (index >= 0) {
             let line = codeArray[index].trim()
-            if(this.identifySpecialStatement(line) && line !== '' && line.includes(this.bodyCommentToken)) {
+            if (this.identifySpecialStatement(line) && line !== ''
+                && (!line.trim().startsWith(this.simpleCommentToken.trim()) || !codeFound)) {
                 codeArray.splice(index, 1)
+            } else if (line !== '') {
+                codeFound = true
             }
 
             index--
@@ -259,14 +264,16 @@ export default class Formatter {
         let selectionArray = []
         let endArray = []
         let selectionFound = false
+        let selectionDone = false
 
         codeArray.forEach(line => {
             if (selection.length !== 0) {
-                if (selection.reduce((result, sLine) => result || line.includes(sLine.trim()), false)) {
+                if (!selectionDone && selection.reduce((result, sLine) => result || line.includes(sLine.trim()), false)) {
                     selectionFound = true
                     selectionArray.push(line)
                 } else if (selectionFound) {
                     endArray.push(line)
+                    selectionDone = true
                 } else {
                     startArray.push(line)
                 }

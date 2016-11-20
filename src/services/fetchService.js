@@ -104,21 +104,10 @@ let handleResponseSuccess = function(responses) {
             try {
                 let formattedCode = formatter.formatSnippet(item.code, start, end, FetchConstants.SPLIT_OFFSET);
 
-                let _start = formattedCode[3][0] - 1
-                let _end = formattedCode[3][1] - 1
+                let newStart = formattedCode[3][0]
+                let newEnd = formattedCode[3][1]
 
-                let correctStart = formattedCode[0].trim().startsWith(item.code.split('\n')[_start].trim())
-                let correctEnd = formattedCode[2].trim().endsWith(item.code.split('\n')[_end].trim())
-
-                if (!correctStart) {
-                    console.log("start error")
-                }
-
-                if (!correctEnd) {
-                    console.log("end error")
-                }
-
-                if (formattedCode[3][1] - formattedCode[3][0] >= FetchConstants.MIN_LINES) {
+                if (newEnd - newStart >= FetchConstants.MIN_LINES) {
                     data.push({
                         title: title,
                         repoUrl: item.repoUrl,
