@@ -118,8 +118,7 @@ let handleResponseSuccess = function(responses) {
                     console.log("end error")
                 }
 
-                if (formattedCode[0].split('\n').length + formattedCode[1].split('\n').length
-                    + formattedCode[2].split('\n').length >= FetchConstants.MIN_LINES) {
+                if (formattedCode[3][1] - formattedCode[3][0] >= FetchConstants.MIN_LINES) {
                     data.push({
                         title: title,
                         repoUrl: item.repoUrl,
