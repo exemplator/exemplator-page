@@ -3,27 +3,53 @@ import ScopeNode from "./scopeTree"
 export default class Formatter {
     constructor(formatUnit) {
         this.formatUnit = formatUnit
+        this.fullCodeArray = ''
+        this.selection = ''
+        this.startSelection = 0
+        this.endSelection = 0
+        this.snippetOffset = 0
+        this.bodyCommentToken = ''
+
+        this.expressionIdentifier = null
+        this.scopeEnterFunc = null
+        this.scopeExitFunc = null
+        this.identifyMethodSigFunc = null
+        this.identifySpecialStatement = null
     }
 
     format(code, expressionIdentifier, scopeEnterFunc, scopeExitFunc) {
         return this.formatSnippet(code, null, null, null, expressionIdentifier, scopeEnterFunc, scopeExitFunc, null, null)
     }
 
-    formatSnippet(code, startRow, endRow, offset, expressionIdentifier, scopeEnterFunc, scopeExitFunc, identifyMethodSigFunc, identifySpecialStatement, startCommentToken, bodyCommentToken) {
-        let codeArray = code.split('\n')
+    formatSnippet(code, startRow, endRow, offset, expressionIdentifier, scopeEnterFunc,
+                  scopeExitFunc, identifyMethodSigFunc, identifySpecialStatement, bodyCommentToken) {
+        // Initialize
+        this.fullCodeArray = code.split('\n')
+        this.startSelection = startRow
+        this.endSelection = endRow
+        this.snippetOffset = offset
+        this.expressionIdentifier = expressionIdentifier
+        this.scopeEnterFunc = scopeEnterFunc
+        this.scopeExitFunc = scopeExitFunc
+        this.identifyMethodSigFunc = identifyMethodSigFunc
+        this.identifySpecialStatement = identifySpecialStatement
+        this.bodyCommentToken = bodyCommentToken
+
+        let codeArray = this.fullCodeArray
 
         // In case we have a snippet, find the snippet
         let snippetPresent = startRow !== null && endRow !== null && offset !== null
         let snippet = []
         if (snippetPresent) {
-            snippet = [codeArray.slice(startRow - 1, endRow), codeArray.slice(startRow - offset - 1, endRow + offset)]
-            codeArray = this._preFormatSnippet(snippet[1], snippet[0], code, startRow - offset - 1, scopeEnterFunc, identifyMethodSigFunc, startCommentToken, bodyCommentToken)
+            snippet = [this.fullCodeArray.slice(startRow - 1, endRow), this.fullCodeArray
+                .slice(startRow - offset - 1, endRow + offset)]
+            codeArray = this._preFormatSnippet(snippet[1], snippet[0])
         }
 
         // Build and balance the scope tree
         codeArray = codeArray.map(line => line.trim())
         let scopeTree = new ScopeNode(null, null)
-        scopeTree.build(codeArray.slice(), 0, scopeEnterFunc, scopeExitFunc) // copy array because it is consumed
+        scopeTree.build(codeArray.slice(), 0, this.scopeEnterFunc, this.scopeExitFunc) // copy array because it is consumed
         scopeTree.balance()
 
         // Init formatted array
@@ -31,7 +57,7 @@ export default class Formatter {
         for (let i = 0; i < codeArray.length; i++) {
             formattedArray[i] = ""
         }
-        this._preFormatArray(formattedArray, scopeTree, this.formatUnit)
+        this._preFormatArray(formattedArray, scopeTree)
 
         // Fill formatted array with code
         for (let i = 0; i < codeArray.length; i++) {
@@ -40,8 +66,8 @@ export default class Formatter {
 
         // Add spaces after lines that do not qualify as an expression (e.g. let str = "hello" +)
         for (let i = 0; i < formattedArray.length; i++) {
-            if (!expressionIdentifier(formattedArray, i) && formattedArray.length > i + 1) {
-                if (scopeEnterFunc(formattedArray, i + 1) === null && scopeExitFunc(formattedArray, i + 1) === null) {
+            if (!this.expressionIdentifier(formattedArray, i) && formattedArray.length > i + 1) {
+                if (this.scopeEnterFunc(formattedArray, i + 1) === null && this.scopeExitFunc(formattedArray, i + 1) === null) {
                     formattedArray[i + 1] = this.formatUnit + formattedArray[i + 1]
                 }
             }
@@ -53,8 +79,8 @@ export default class Formatter {
         }
 
         let selection = this._splitSelection(formattedArray, snippet[0])
-        let prefixResult = this._formatPrefix(scopeTree, selection[0], code, startRow - selection[0].length, startCommentToken, bodyCommentToken)
-        let suffixResult = this._formatSuffix(selection[2], endRow + selection[2].length, identifySpecialStatement)
+        let prefixResult = this._formatPrefix(scopeTree, selection[0], code, startRow - selection[0].length)
+        let suffixResult = this._formatSuffix(selection[2], endRow + selection[2].length)
         let range = [prefixResult[1], suffixResult[1]]
 
         let selectionString = ""
@@ -65,12 +91,12 @@ export default class Formatter {
         return [prefixResult[0], selectionString, suffixResult[0], range]
     }
 
-    _preFormatSnippet(code, selection, fullCode, startIndex, scopeEnterFunc, identifyMethodSigFunc, startCommentToken, bodyCommentToken) {
-        let snippet = this._splitSelection(code, selection)
-        let prefixArray = this._handleOpenComments(snippet[0], fullCode.split('\n'), startIndex, startCommentToken, bodyCommentToken)
-        prefixArray = this._removeExtraMethodSigAbove(prefixArray, scopeEnterFunc, identifyMethodSigFunc)
-        let suffixArray = this._removeExtraMethodSigBelow(snippet[2], identifyMethodSigFunc)
-        return prefixArray.concat(snippet[1].concat(suffixArray))
+    _preFormatSnippet(snippet, selection) {
+        let splitSnippet = this._splitSelection(snippet, selection)
+        let prefixArray = this._handleOpenComments(splitSnippet[0], this.startSelection - this.snippetOffset - 1)
+        prefixArray = this._removeExtraMethodSigAbove(prefixArray)
+        let suffixArray = this._removeExtraMethodSigBelow(splitSnippet[2])
+        return prefixArray.concat(splitSnippet[1].concat(suffixArray))
     }
 
     _formatPrefix(scopeTree, array, oldStart) {
@@ -100,13 +126,13 @@ export default class Formatter {
         return [result, oldStart + offset]
     }
 
-    _formatSuffix(codeArray, oldEnd, identifySpecialStatement) {
+    _formatSuffix(codeArray, oldEnd) {
         let originalLength = codeArray.length
 
         let index = codeArray.length - 1
         while (index >= 0) {
             let line = codeArray[index].trim()
-            if(identifySpecialStatement(line) && line !== '') {
+            if(this.identifySpecialStatement(line) && line !== '') {
                 codeArray.splice(index, 1)
             }
 
@@ -140,27 +166,28 @@ export default class Formatter {
         }
     }
 
-    _handleOpenComments(codeArray, fullCode, startLine, startCommentToken, bodyCommentToken) {
-        if (codeArray.length > 0 && startLine < fullCode.length && codeArray[0].trim().startsWith(bodyCommentToken)) {
-            codeArray.unshift(fullCode[startLine])
-            return this._handleOpenComments(codeArray, fullCode, startLine - 1, startCommentToken, bodyCommentToken)
+    _handleOpenComments(codeArray, startLine) {
+        if (codeArray.length > 0 && startLine < this.fullCodeArray.length && codeArray[0].trim()
+                .startsWith(this.bodyCommentToken)) {
+            codeArray.unshift(this.fullCodeArray[startLine])
+            return this._handleOpenComments(codeArray, startLine - 1)
         } else {
             return codeArray
         }
     }
 
-    _removeExtraMethodSigAbove(codeArray, scopeEnterFunc, identifyMethodSigFunc) {
+    _removeExtraMethodSigAbove(codeArray) {
         let methodSigCount = 0
         let index = codeArray.length - 1
         while (index >= 0) {
             let line = codeArray[index].trim()
-            if (identifyMethodSigFunc(line) && methodSigCount === 0) {
+            if (this.identifyMethodSigFunc(line) && methodSigCount === 0) {
                 methodSigCount++
-            } else if(identifyMethodSigFunc(line) && methodSigCount === 1) {
+            } else if(this.identifyMethodSigFunc(line) && methodSigCount === 1) {
                 codeArray.splice(index, 1)
                 methodSigCount++
-            } else if(scopeEnterFunc([line], 0) !== null && index - 1 > 0 && methodSigCount === 1) {
-                if (identifyMethodSigFunc(codeArray[index - 1])) {
+            } else if(this.scopeEnterFunc([line], 0) !== null && index - 1 > 0 && methodSigCount === 1) {
+                if (this.identifyMethodSigFunc(codeArray[index - 1])) {
                     codeArray.splice(index, 1)
                     methodSigCount++
                 }
@@ -171,19 +198,19 @@ export default class Formatter {
             index--
         }
 
-        if (scopeEnterFunc([codeArray[0].trim()], 0) === 0) {
+        if (this.scopeEnterFunc([codeArray[0].trim()], 0) === 0) {
             codeArray.shift()
         }
 
         return codeArray
     }
 
-    _removeExtraMethodSigBelow(codeArray, identifyMethodSigFunc) {
+    _removeExtraMethodSigBelow(codeArray) {
         let index = 0
         let found = false
         while (index < codeArray.length) {
             let line = codeArray[index].trim()
-            if (identifyMethodSigFunc(line) || found) {
+            if (this.identifyMethodSigFunc(line) || found) {
                 codeArray.splice(index, 1)
                 found = true
             } else {

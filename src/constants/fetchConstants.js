@@ -7,5 +7,5 @@ export default {
     NEXT_PAGE_SUCCESS: 'NEXT_PAGE_SUCCESS',
     FETCH_ERROR: 'FETCH_ERROR',
     SPLIT_OFFSET: 10,
-    MIN_LINES: 5
+    MIN_LINES: 6
 }
