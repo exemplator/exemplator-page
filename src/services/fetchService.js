@@ -4,7 +4,7 @@ import { fetchSuccess, fetchError, nextPageSuccess } from "../actions/fetchActio
 import JavaFormatter from "../functions/javaFormatter"
 
 export var sendRequest = function(action) {
-    // update store with new request
+    // Update store with new request
     FetchStore.setCode(action.code)
     FetchStore.setType(action.type)
     FetchStore.setPage(0)
@@ -41,12 +41,12 @@ export var sendRequest = function(action) {
 }
 
 export var fetchNextPage = function() {
-    // get current request settings
+    // Get current request settings
     let code = FetchStore.getCode()
     let type = FetchStore.getType()
     let page = FetchStore.getPage()
     
-    // increment page by 1
+    // Increment page by 1
     page += 1
     
     if (FetchStore.getCounter() <= 0) {
@@ -104,6 +104,20 @@ let handleResponseSuccess = function(responses) {
             try {
                 let formattedCode = formatter.formatSnippet(item.code, start, end, FetchConstants.SPLIT_OFFSET);
 
+                let _start = formattedCode[3][0] - 1
+                let _end = formattedCode[3][1] - 1
+
+                let correctStart = formattedCode[0].trim().startsWith(item.code.split('\n')[_start].trim())
+                let correctEnd = formattedCode[2].trim().endsWith(item.code.split('\n')[_end].trim())
+
+                if (!correctStart) {
+                    console.log("start error")
+                }
+
+                if (!correctEnd) {
+                    console.log("end error")
+                }
+
                 if (formattedCode[0].split('\n').length + formattedCode[1].split('\n').length
                     + formattedCode[2].split('\n').length >= FetchConstants.MIN_LINES) {
                     data.push({
@@ -118,7 +132,7 @@ let handleResponseSuccess = function(responses) {
                     FetchStore.setCounter(FetchStore.getCounter() + 1)
                 }
             } catch (e) {
-               console.log("Unable to format and add code: " + e)
+               console.log("Unable to format code: " + e)
             }
         })
     })

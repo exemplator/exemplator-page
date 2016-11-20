@@ -19,7 +19,8 @@ export default class Formatter {
     }
 
     format(code, expressionIdentifier, scopeEnterFunc, scopeExitFunc) {
-        return this.formatSnippet(code, null, null, null, expressionIdentifier, scopeEnterFunc, scopeExitFunc, null, null)
+        return this.formatSnippet(code, null, null, null, expressionIdentifier, scopeEnterFunc,
+            scopeExitFunc, null, null)
     }
 
     formatSnippet(code, startRow, endRow, offset, expressionIdentifier, scopeEnterFunc,
@@ -82,7 +83,7 @@ export default class Formatter {
 
         // Format prefix and suffix
         let selection = this._splitSelection(formattedArray, snippet[0])
-        let prefixResult = this._formatPrefix(scopeTree, selection[0], code, this.startSelection - selection[0].length)
+        let prefixResult = this._formatPrefix(scopeTree, selection[0], this.startSelection - selection[0].length)
         let suffixResult = this._formatSuffix(selection[2], this.endSelection + selection[2].length)
         let range = [prefixResult[1], suffixResult[1]]
 
@@ -112,17 +113,15 @@ export default class Formatter {
             .reduce((limit, current) => Math.max(limit, current.getEnd()), -1)
 
         let result = []
-        for (let i = 0; i < array.length; i++) {
-            if (i > limit) {
-                result.push(array[i])
-            }
+        for (let i = limit + 1; i < array.length; i++) {
+            result.push(array[i])
         }
 
         result = this._trimBeginning(result)
         let offset = originalLength - result.length
 
         if (result.length > 0) {
-            result = result.reduce(((acc, line) => acc + '\n' + line))
+            result = result.reduce((acc, line) => acc + '\n' + line)
         } else {
             result = ""
         }
@@ -136,7 +135,7 @@ export default class Formatter {
         let index = codeArray.length - 1
         while (index >= 0) {
             let line = codeArray[index].trim()
-            if(this.identifySpecialStatement(line) && line !== '') {
+            if(this.identifySpecialStatement(line) && line !== '' && line.includes(this.bodyCommentToken)) {
                 codeArray.splice(index, 1)
             }
 
@@ -171,9 +170,9 @@ export default class Formatter {
     }
 
     _handleOpenComments(codeArray, startLine) {
-        if (codeArray.length > 0 && startLine < this.fullCodeArray.length && codeArray[0].trim()
+        if (codeArray.length > 0 && startLine - 1 < this.fullCodeArray.length && codeArray[0].trim()
                 .startsWith(this.bodyCommentToken)) {
-            codeArray.unshift(this.fullCodeArray[startLine])
+            codeArray.unshift(this.fullCodeArray[startLine - 1])
             return this._handleOpenComments(codeArray, startLine - 1)
         } else {
             return codeArray
