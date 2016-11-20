@@ -5,24 +5,33 @@ var SCOPE_EXIT_TOKEN = '}'
 var EXPRESSION_TERMINATION_TOKEN = ';'
 var ANNOTATION_TOKEN = '@'
 var COMMENT_START_TOKEN = '/**'
+var COMMENT_START_TOKEN_2 = '/*'
 var COMMENT_BODY_TOKEN = '*'
 var COMMENT_END_TOKEN = '*/'
 var COMMENT_SIMPLE_TOKEN = '//'
-var COMMENT_TOKENS = [COMMENT_START_TOKEN, COMMENT_BODY_TOKEN, COMMENT_END_TOKEN, COMMENT_SIMPLE_TOKEN]
+var COMMENT_TOKENS = [COMMENT_START_TOKEN, COMMENT_START_TOKEN_2, COMMENT_BODY_TOKEN, COMMENT_END_TOKEN, COMMENT_SIMPLE_TOKEN]
+var PROTECTED_NON_METHOD_TOKENS = ['return', 'new']
 
 export default class JavaFormatter extends Formatter {
+
     constructor(formatUnit) {
         super(formatUnit)
-
-        this.symbolRegex = new RegExp("\\w");
-        this.symbolWithGenericsRegex = new RegExp("[\\w\\[\\],]");
+        this.methodSigRegex = new RegExp("^(public |private |protected |static |final |native |synchronized " +
+            "|abstract |transient )*(<.*>\\s+)?\\w+(<.*>|\\[.*\\])?\\s+\\w+\\s*\\(.*$")
     }
 
     format(codeString) {
-        return super.format(codeString,
+        return this.formatSnippet(codeString, null, null, null)
+    }
+
+    formatSnippet(code, startRow, endRow, offset) {
+        return super.formatSnippet(code, startRow, endRow, offset,
             ((codeArray, index) => this._expressionIdentifier(codeArray, index)),
             ((lines, index) => this._scopeEnterFunc(lines, index)),
-            ((lines, index) => this._scopeExitFunc(lines, index)))
+            ((lines, index) => this._scopeExitFunc(lines, index)),
+            (line => this._checkForFunction(line)),
+            (line => this._checkForSpecialStatement(line)),
+            COMMENT_BODY_TOKEN, COMMENT_SIMPLE_TOKEN)
     }
 
     _expressionIdentifier(codeArray, index) {
@@ -31,7 +40,7 @@ export default class JavaFormatter extends Formatter {
             return line.endsWith(EXPRESSION_TERMINATION_TOKEN)
                 || this._scopeEnterFunc([line], 0) !== null
                 || this._scopeExitFunc([line], 0) !== null
-                || this._checkForSpecialStatment(line)
+                || this._checkForSpecialStatement(line)
         }
 
         return false
@@ -57,87 +66,17 @@ export default class JavaFormatter extends Formatter {
         }
     }
 
-    _checkForSpecialStatment(line) {
+    _checkForSpecialStatement(line) {
         return line.startsWith(ANNOTATION_TOKEN)
             || line === ''
             || COMMENT_TOKENS.reduce((result, token) => result || line.startsWith(token), false)
     }
-    
-    _checkForFunction(line) {
-        let matchReturnPossible = true;
-        let matchReturn = false;
-        let returnAngleBracketsOpen = 0;
-        let spaceAfterReturn = false;
-        let matchFD = false;
-        let spaceAfterFD = false;
 
-        for (let i = 0; i < line.length; i++) {
-            let c = line[i]
-            if (!matchReturn && matchReturnPossible) {
-                if (this.symbolRegex.test(c)) {
-                    matchReturn = true;
-                }
-            } else if (matchReturn && !spaceAfterReturn) {
-                if (!this.symbolWithGenericsRegex.test(c)) {
-                    if (c === "<") {
-                        returnAngleBracketsOpen++;
-                    } else if (c === ">") {
-                        returnAngleBracketsOpen--;
-                    } else if (c === " ") {
-                        if (returnAngleBracketsOpen == 0) {
-                            spaceAfterReturn = true;
-                        } else {
-                            //Nothing
-                        }
-                    } else {
-                        matchReturn = false;
-                        matchReturnPossible = false;
-                        returnAngleBracketsOpen = 0;
-                    }
-                }
-            } else if (spaceAfterReturn && !matchFD) {
-                if (this.symbolRegex.test(c)) {
-                    matchFD = true;
-                } else if (c !== " ") {
-                    spaceAfterReturn = false;
-                    matchReturn = false;
-                    matchReturnPossible = false;
-                }
-            } else if (matchFD && !spaceAfterFD) {
-                if (c === "(") {
-                    return true;
-                } else if (this.symbolRegex.test(c)) {
-                    //Nothing
-                } else if (this.symbolWithGenericsRegex.test(c)) {
-                    matchFD = false;
-                    spaceAfterReturn = false;
-                } else if (c === " ") {
-                    spaceAfterFD = true
-                } else {
-                    matchFD = false;
-                    spaceAfterReturn = false;
-                    matchReturn = false;
-                    matchReturnPossible = false;
-                }
-            } else if (spaceAfterFD) {
-                if (c === "(") {
-                    return true;
-                } else if (this.symbolRegex.test(c)) {
-                    matchFD = false;
-                    spaceAfterReturn = false;
-                } else if (c === " ") {
-                    //Nothing
-                } else {
-                    matchFD = false;
-                    spaceAfterReturn = false;
-                    matchReturn = false;
-                    matchReturnPossible = false;
-                    spaceAfterFD = false;
-                }
-            } else if (c === " ") {
-                matchReturnPossible = true;
-            }
+    _checkForFunction(line) {
+        if (PROTECTED_NON_METHOD_TOKENS.reduce((result, token) => result || line.trim().startsWith(token), false)) {
+            return false
         }
-        return false;
+
+        return this.methodSigRegex.test(line)
     }
 }

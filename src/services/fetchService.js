@@ -4,7 +4,7 @@ import { fetchSuccess, fetchError, nextPageSuccess } from "../actions/fetchActio
 import JavaFormatter from "../functions/javaFormatter"
 
 export var sendRequest = function(action) {
-    // update store with new request
+    // Update store with new request
     FetchStore.setCode(action.code)
     FetchStore.setType(action.type)
     FetchStore.setPage(0)
@@ -41,12 +41,12 @@ export var sendRequest = function(action) {
 }
 
 export var fetchNextPage = function() {
-    // get current request settings
+    // Get current request settings
     let code = FetchStore.getCode()
     let type = FetchStore.getType()
     let page = FetchStore.getPage()
     
-    // increment page by 1
+    // Increment page by 1
     page += 1
     
     if (FetchStore.getCounter() <= 0) {
@@ -96,30 +96,32 @@ let handleResponseSuccess = function(responses) {
             let start = selection.start.line
             let end = selection.end.line
 
-            let code = identifySelection(item.code, start - 1, end, FetchConstants.SPLIT_OFFSET);
-
             let title = "Example " + FetchStore.getCounter() + " (Line " + start + ")"
             if (start !== end) {
                 title = "Example " + FetchStore.getCounter() + " (Line " + start + "-" + end + ")"
             }
 
-            if (code[1][0].includes("DatabaseConnection dbConn = new DatabaseConnection(cont);")) {
-                console.log("here")
+            try {
+                let formattedCode = formatter.formatSnippet(item.code, start, end, FetchConstants.SPLIT_OFFSET);
+
+                let newStart = formattedCode[3][0]
+                let newEnd = formattedCode[3][1]
+
+                if (newEnd - newStart >= FetchConstants.MIN_LINES) {
+                    data.push({
+                        title: title,
+                        repoUrl: item.repoUrl,
+                        fileUrl: item.fileUrl + "#L" + start,
+                        codeTop: formattedCode[0],
+                        codeHighlighted: formattedCode[1],
+                        codeBottom: formattedCode[2]
+                    })
+
+                    FetchStore.setCounter(FetchStore.getCounter() + 1)
+                }
+            } catch (e) {
+               console.log("Unable to format code: " + e)
             }
-
-            let formattedCodeArray = formatter.format(code[1])
-            let formattedCode = splitSelection(formattedCodeArray, code[0]);
-
-            data.push({
-                title: title,
-                repoUrl: item.repoUrl,
-                fileUrl: item.fileUrl + "#L" + start,
-                codeTop: formattedCode[0],
-                codeHighlighted: formattedCode[1],
-                codeBottom: formattedCode[2],
-            })
-
-            FetchStore.setCounter(FetchStore.getCounter() + 1)
         })
     })
     
@@ -127,51 +129,4 @@ let handleResponseSuccess = function(responses) {
         results: data,
         page: page
     }
-}
-
-let identifySelection = function(codeString, startRow, endRow, offset) {
-    // Take string or array
-    let codeArray
-    if (typeof codeString === 'string') {
-        codeArray = codeString.split('\n')
-    } else {
-        codeArray = codeString
-    }
-
-    return [codeArray.slice(startRow, endRow), codeArray.slice(startRow - offset, endRow + offset)]
-}
-
-let splitSelection = function(codeArray, selection) {
-    let startArray = []
-    let highlightedArray = []
-    let endArray = []
-    let selectionFound = false
-
-    codeArray.forEach(line => {
-        if (selection.length !== 0) {
-            if (selection.reduce((result, sLine) => result || line.includes(sLine.trim()), false)) {
-                selectionFound = true
-                highlightedArray.push(line)
-            } else if (selectionFound) {
-                endArray.push(line)
-            } else {
-                startArray.push(line)
-            }
-        }
-    })
-
-    let startString = ""
-    let highlightedString = ""
-    let endString = ""
-    if (startArray.length !== 0) {
-        startString = startArray.reduce(((acc, line) => acc + "\n" + line))
-    }
-    if (highlightedArray.length !== 0) {
-        highlightedString = highlightedArray.reduce(((acc, line) => acc + "\n" + line))
-    }
-    if (endArray.length !== 0) {
-        endString = endArray.reduce(((acc, line) => acc + "\n" + line))
-    }
-
-    return [startString, highlightedString, endString];
 }
