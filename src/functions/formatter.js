@@ -17,7 +17,7 @@ export default class Formatter {
         let snippet = []
         if (snippetPresent) {
             snippet = [codeArray.slice(startRow - 1, endRow), codeArray.slice(startRow - offset - 1, endRow + offset)]
-            codeArray = this._preFormatSnippet(snippet[1], snippet[0], scopeEnterFunc, identifyMethodSigFunc)
+            codeArray = this._preFormatSnippet(snippet[1], snippet[0], code, startRow - offset - 1, scopeEnterFunc, identifyMethodSigFunc, startCommentToken, bodyCommentToken)
         }
 
         // Build and balance the scope tree
@@ -65,14 +65,15 @@ export default class Formatter {
         return [prefixResult[0], selectionString, suffixResult[0], range]
     }
 
-    _preFormatSnippet(code, selection, scopeEnterFunc, identifyMethodSigFunc) {
+    _preFormatSnippet(code, selection, fullCode, startIndex, scopeEnterFunc, identifyMethodSigFunc, startCommentToken, bodyCommentToken) {
         let snippet = this._splitSelection(code, selection)
-        let prefixArray = this._removeExtraMethodSigAbove(snippet[0], scopeEnterFunc, identifyMethodSigFunc)
+        let prefixArray = this._handleOpenComments(snippet[0], fullCode.split('\n'), startIndex, startCommentToken, bodyCommentToken)
+        prefixArray = this._removeExtraMethodSigAbove(prefixArray, scopeEnterFunc, identifyMethodSigFunc)
         let suffixArray = this._removeExtraMethodSigBelow(snippet[2], identifyMethodSigFunc)
         return prefixArray.concat(snippet[1].concat(suffixArray))
     }
 
-    _formatPrefix(scopeTree, array, fullCode, oldStart, startCommentToken, bodyCommentToken) {
+    _formatPrefix(scopeTree, array, oldStart) {
         let originalLength = array.length
 
         let limit = scopeTree.getChildren()
@@ -87,11 +88,8 @@ export default class Formatter {
             }
         }
 
-        let offset = originalLength - result.length
-        result = this._handleOpenComments(result, fullCode.split('\n'), oldStart + offset, startCommentToken, bodyCommentToken)
-
         result = this._trimBeginning(result)
-        offset = originalLength - result.length
+        let offset = originalLength - result.length
 
         if (result.length > 0) {
             result = result.reduce(((acc, line) => acc + '\n' + line))
@@ -144,7 +142,7 @@ export default class Formatter {
 
     _handleOpenComments(codeArray, fullCode, startLine, startCommentToken, bodyCommentToken) {
         if (codeArray.length > 0 && startLine < fullCode.length && codeArray[0].trim().startsWith(bodyCommentToken)) {
-            codeArray.unshift(fullCode[startLine].trim())
+            codeArray.unshift(fullCode[startLine])
             return this._handleOpenComments(codeArray, fullCode, startLine - 1, startCommentToken, bodyCommentToken)
         } else {
             return codeArray
