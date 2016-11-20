@@ -16,7 +16,7 @@ export default class JavaFormatter extends Formatter {
     constructor(formatUnit) {
         super(formatUnit)
         this.methodSigRegex = new RegExp("^(public |private |protected |static |final |native |synchronized " +
-            "|abstract |transient )*(<.*>|\\[.*\\]\\s+)?\\w+(<.*>|\\[.*\\])?\\s+\\w+\\s*\\(.*$")
+            "|abstract |transient )*(<.*>\\s+)?\\w+(<.*>|\\[.*\\])?\\s+\\w+\\s*\\(.*$")
     }
 
     format(codeString) {
