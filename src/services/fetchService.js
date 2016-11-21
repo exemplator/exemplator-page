@@ -1,7 +1,7 @@
 import FetchConstants from "../constants/fetchConstants"
 import FetchStore from '../stores/fetchStore'
 import { fetchSuccess, fetchError, nextPageSuccess } from "../actions/fetchActions"
-import JavaFormatter from "../functions/javaFormatter"
+import Formatter from "auto-format"
 
 export var sendRequest = function(action) {
     // Update store with new request
@@ -13,7 +13,7 @@ export var sendRequest = function(action) {
     let typeArray = action.type.split(".")
     let pakage = action.type.substring(0, action.type.length - typeArray[typeArray.length - 1].length - 1)
     
-    var xmlhttp = new XMLHttpRequest();
+    let xmlhttp = new XMLHttpRequest();
     xmlhttp.open("POST", FetchConstants.FETCH_URL);
     xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
@@ -56,7 +56,7 @@ export var fetchNextPage = function() {
     let typeArray = type.split(".")
     let pakage = type.substring(0, type.length - typeArray[typeArray.length - 1].length - 1)
 
-    var xmlhttp = new XMLHttpRequest();
+    let xmlhttp = new XMLHttpRequest();
     xmlhttp.open("POST", FetchConstants.FETCH_URL);
     xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
@@ -89,7 +89,7 @@ let handleResponseSuccess = function(responses) {
 
     let data = []
     let page = response.endPage
-    let formatter = new JavaFormatter("   ")
+    let formatter = Formatter.createJavaFormatter("    ")
 
     responseArray.forEach(item => {
         item.selections.forEach(selection => {
