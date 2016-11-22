@@ -67,7 +67,12 @@ export default class SearchSection extends React.Component {
             return
         }
 
-        initFetch(this.state.codeText, this.state.typeText, 0)
+        let cleanCodeText = this.state.codeText.match(new RegExp("\\w+"))
+        if (cleanCodeText === null && cleanCodeText.length > 0) {
+            cleanCodeText = this.state.codeText
+        }
+
+        initFetch(cleanCodeText[0], this.state.typeText, 0)
         
         this.setState({
             errorText: ""
