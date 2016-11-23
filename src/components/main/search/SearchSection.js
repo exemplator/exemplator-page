@@ -110,7 +110,7 @@ export default class SearchSection extends React.Component {
                                fontSize: "1.2em",
                                color: "#C62828"
                            }}
-                           floatingLabelText={"e.g. \"close\""}
+                           floatingLabelText={"e.g. \"listIterator\""}
                            floatingLabelFixed={true}
                            floatingLabelStyle={{color: "white"}}
                            style={{marginLeft: "3%", marginRight: "3%", width: "250px"}}
@@ -128,7 +128,7 @@ export default class SearchSection extends React.Component {
                                fontSize: "1.2em",
                                color: "#C62828"
                            }}
-                           floatingLabelText={"e.g. \"java.io.InputStream\" or \"InputStream\""}
+                           floatingLabelText={"e.g. \"java.util.ArrayList\" or \"ArrayList\""}
                            floatingLabelFixed={true}
                            floatingLabelStyle={{color: "white", width: "305px"}}
                            style={{marginLeft: "3%", width: "300px"}}
