@@ -102,19 +102,32 @@ let handleResponseSuccess = function(responses) {
             }
 
             try {
-                let formattedCode = formatter.formatSnippet(item.code, start, end, FetchConstants.SPLIT_OFFSET);
+                //let formattedCode = formatter.formatSnippet(item.code, start, end, FetchConstants.SPLIT_OFFSET);
 
-                let newStart = formattedCode[3][0]
-                let newEnd = formattedCode[3][1]
+                let fullCodeArray = item.code.split('\n')
+                let formattedCode = [fullCodeArray.slice(start - 1, end), fullCodeArray.slice(start - 10 - 1, end + 10)]
+                let codeSplit = splitCode(formattedCode[1], formattedCode[0])
+                console.log("sdf")
+                //let newStart = formattedCode[3][0]
+                //let newEnd = formattedCode[3][1]
+                let newStart = 0
+                let newEnd = 10
+
+                let fullCode = codeSplit[0].reduce(((acc, line) => acc + '\n' + line)) + '\n'
+                        + codeSplit[1].reduce(((acc, line) => acc + '\n' + line)) + '\n'
+                        + codeSplit[2].reduce(((acc, line) => acc + '\n' + line))
+
+                fullCode = formatter.format(fullCode);
+                codeSplit = splitCode(fullCode, formattedCode[0])
 
                 if (newEnd - newStart >= FetchConstants.MIN_LINES) {
                     data.push({
                         title: title,
                         repoUrl: item.repoUrl,
                         fileUrl: item.fileUrl + "#L" + start,
-                        codeTop: formattedCode[0],
-                        codeHighlighted: formattedCode[1],
-                        codeBottom: formattedCode[2]
+                        codeTop: codeSplit[0].reduce(((acc, line) => acc + '\n' + line)),
+                        codeHighlighted: codeSplit[1].reduce(((acc, line) => acc + '\n' + line)),
+                        codeBottom: codeSplit[2].reduce(((acc, line) => acc + '\n' + line))
                     })
 
                     FetchStore.setCounter(FetchStore.getCounter() + 1)
@@ -129,4 +142,29 @@ let handleResponseSuccess = function(responses) {
         results: data,
         page: page
     }
+}
+
+function splitCode(codeArray, selection) {
+    let startArray = []
+    let selectionArray = []
+    let endArray = []
+    let selectionFound = false
+    let selectionDone = false
+
+    codeArray.forEach(line => {
+        if (selection.length !== 0) {
+            if (!selectionDone && selection.reduce((result, sLine) => result
+                || line.includes(sLine.trim()), false)) {
+                selectionFound = true
+                selectionArray.push(line)
+            } else if (selectionFound) {
+                endArray.push(line)
+                selectionDone = true
+            } else {
+                startArray.push(line)
+            }
+        }
+    })
+
+    return [startArray, selectionArray, endArray];
 }
