@@ -101,13 +101,16 @@ export default class SearchSection extends React.Component {
 
         return (
             <div className="search-section">
-                <span className="search-section-text">Find examples for</span> 
+                <span className="search-section-text">Find examples for</span>
                 <TextField type="text"
                            value={this.state.codeText}
                            inputStyle={{
                                textAlign: "left",
                                fontFamily: "Code-Font",  
                                fontSize: "1.2em",
+                               color: "#C62828"
+                           }}
+                           underlineStyle={{
                                color: "#C62828"
                            }}
                            floatingLabelText={"e.g. \"listIterator\""}
@@ -126,6 +129,9 @@ export default class SearchSection extends React.Component {
                                textAlign: "left",
                                fontFamily: "Code-Font",  
                                fontSize: "1.2em",
+                               color: "#C62828"
+                           }}
+                           underlineStyle={{
                                color: "#C62828"
                            }}
                            floatingLabelText={"e.g. \"java.util.ArrayList\" or \"ArrayList\""}
