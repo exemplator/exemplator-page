@@ -1,4 +1,4 @@
-# exemplator page
+# exemplator-page
 [![Build Status](https://travis-ci.org/exemplator/exemplator-page.svg?branch=master)](https://travis-ci.org/exemplator/exemplator-page)
 
 The web page for exemplator. 
