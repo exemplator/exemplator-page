@@ -1,9 +1,11 @@
 # Exemplator Page
 [![Build Status](https://travis-ci.org/exemplator/exemplator-page.svg?branch=master)](https://travis-ci.org/exemplator/exemplator-page)
 
-The web front-end to Exemplator. With exemplator you can find examples of how other people use code to get an idea of how it works, without reading pages of documentation.
+The web page for exemplator. 
 
-[Here](http://exemplator.xyz) is the website.
+Exemplator shows you code snippets from GitHub in which a function of your choice is called. Exemplator is meant as an addition to docs: sometimes you stumble across a cool library with a mediocre documentation, and you just want to know how to use it. Well with exemplator you can "google" the function in question and see examples of it being used in real projects. 
+
+Check it out [here](http://exemplator.xyz).
 
 For more information see the [exemplator](https://github.com/exemplator/exemplator) repository.
 
